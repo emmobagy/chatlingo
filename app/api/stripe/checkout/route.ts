@@ -4,16 +4,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getAdminDb } from '@/lib/firebaseAdmin';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-const VALID_PRICE_IDS = new Set([
-  process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID,
-  process.env.NEXT_PUBLIC_STRIPE_QUARTERLY_PRICE_ID,
-  process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID,
-  process.env.NEXT_PUBLIC_STRIPE_LAUNCH_PRICE_ID,
-]);
-
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+  const VALID_PRICE_IDS = new Set([
+    process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID,
+    process.env.NEXT_PUBLIC_STRIPE_QUARTERLY_PRICE_ID,
+    process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID,
+    process.env.NEXT_PUBLIC_STRIPE_LAUNCH_PRICE_ID,
+  ]);
+
   try {
     const { priceId, uid, email } = await req.json();
 

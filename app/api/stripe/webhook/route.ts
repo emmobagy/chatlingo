@@ -4,9 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getAdminDb } from '@/lib/firebaseAdmin';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
 function tierFromPriceId(priceId: string): string {
   const map: Record<string, string> = {
     [process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID!]:   'pro',
@@ -24,6 +21,9 @@ function getSubId(invoice: Stripe.Invoice): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
   const body = await req.text();
   const sig = req.headers.get('stripe-signature');
 

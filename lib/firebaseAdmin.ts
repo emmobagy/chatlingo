@@ -6,13 +6,17 @@ let db: Firestore;
 
 export function getAdminDb(): Firestore {
   if (!db) {
+    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+    if (!clientEmail || !privateKey) {
+      throw new Error('Firebase Admin credentials not configured');
+    }
+
     if (!getApps().length) {
       app = initializeApp({
-        credential: cert({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        }),
+        credential: cert({ projectId, clientEmail, privateKey }),
       });
     }
     db = getFirestore(app ?? getApps()[0]);
