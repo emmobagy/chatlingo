@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { verify as totpVerify } from 'otplib';
 import { createHmac } from 'crypto';
