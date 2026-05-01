@@ -1,0 +1,103 @@
+{
+  "ChatLingo Formatting Instructions": {
+    "prefix": "cl-style",
+    "description": "Incolla le istruzioni di formattazione ChatLingo all'inizio di un prompt per LLM",
+    "body": [
+      "ISTRUZIONI DI FORMATTAZIONE CHATLINGO",
+      "",
+      "Scrivi come se stessi scrivendo un articolo o un messaggio in prosa naturale.",
+      "",
+      "Regole obbligatorie:",
+      "- Nessun em-dash (—). Usa virgole o punti al loro posto.",
+      "- Nessuna freccia (→, ←, ➜). Usa parole come 'poi', 'quindi', 'verso'.",
+      "- Nessun asterisco (*) per enfatizzare. Usa la struttura della frase.",
+      "- Nessun trattino usato come separatore visivo.",
+      "- Nessun elenco puntato se il testo può essere scritto in prosa continua.",
+      "- Nessuna parola in MAIUSCOLO per dare enfasi.",
+      "- Frasi complete con soggetto, verbo e complemento.",
+      "- Tono conversazionale ma professionale, mai troppo formale.",
+      "$0"
+    ]
+  },
+  "ChatLingo Motivational Message (completed)": {
+    "prefix": "cl-msg-done",
+    "description": "Template prompt per messaggi di completamento obiettivo giornaliero",
+    "body": [
+      "Contesto: l'utente ha appena completato la sessione di pratica giornaliera in ChatLingo.",
+      "Lingua: ${1:italiano}",
+      "Tono: caldo, diretto, senza enfasi eccessiva.",
+      "Lunghezza: una o due frasi.",
+      "",
+      "Scrivi un messaggio di congratulazioni che non usi em-dash, frecce o asterischi.",
+      "$0"
+    ]
+  },
+  "ChatLingo Motivational Message (remaining)": {
+    "prefix": "cl-msg-remaining",
+    "description": "Template prompt per messaggi di incoraggiamento con minuti rimanenti",
+    "body": [
+      "Contesto: all'utente mancano ${1:X} minuti per completare l'obiettivo giornaliero in ChatLingo.",
+      "Lingua: ${2:italiano}",
+      "Tono: incoraggiante ma sobrio, non gridato.",
+      "Lunghezza: una frase, massimo due.",
+      "",
+      "Scrivi il messaggio senza em-dash, frecce o punteggiatura decorativa.",
+      "$0"
+    ]
+  },
+  "ChatLingo UI Label": {
+    "prefix": "cl-ui-label",
+    "description": "Template prompt per etichette UI (bottoni, placeholder, etichette di campo)",
+    "body": [
+      "Contesto: etichetta per ${1:descrivi il bottone o il campo} nell'app ChatLingo.",
+      "Lingua: ${2:italiano}",
+      "Lunghezza massima: quattro parole.",
+      "Tono: neutro e diretto.",
+      "",
+      "Nessun simbolo, nessuna freccia, nessun punto esclamativo a meno che non sia indispensabile.",
+      "$0"
+    ]
+  },
+  "ChatLingo Feature Description": {
+    "prefix": "cl-feature",
+    "description": "Template prompt per descrivere una funzionalità (onboarding o marketing)",
+    "body": [
+      "Contesto: descrizione della funzionalità '${1:nome funzionalità}' per la pagina ${2:landing|onboarding|dashboard} di ChatLingo.",
+      "Lingua: ${3:italiano}",
+      "Lunghezza: due o tre frasi in prosa continua.",
+      "Tono: chiaro, fiducioso, senza aggettivi vuoti come 'rivoluzionario' o 'incredibile'.",
+      "",
+      "Nessun elenco puntato. Nessun em-dash. Nessuna freccia.",
+      "$0"
+    ]
+  },
+  "ChatLingo Error Message": {
+    "prefix": "cl-error",
+    "description": "Template prompt per messaggi di errore o avviso",
+    "body": [
+      "Contesto: messaggio mostrato all'utente quando ${1:descrivi la situazione di errore} in ChatLingo.",
+      "Lingua: ${2:italiano}",
+      "Tono: neutro, non colpevolizzante, utile.",
+      "Lunghezza: una frase con una possibile soluzione.",
+      "",
+      "Nessun punto esclamativo. Nessun em-dash. Testo in prosa naturale.",
+      "$0"
+    ]
+  },
+  "ChatLingo Style Checklist": {
+    "prefix": "cl-check",
+    "description": "Checklist da usare prima di incollare testo generato nell'app",
+    "body": [
+      "CHECKLIST STILE CHATLINGO",
+      "",
+      "1. Il testo contiene em-dash (—)? Sostituiscili con una virgola o un punto.",
+      "2. Il testo contiene frecce (→, ←)? Riscrivilo con parole.",
+      "3. Il testo usa asterischi per enfatizzare? Rimuovili e riscrivi la frase.",
+      "4. Ci sono separatori visivi? Eliminali.",
+      "5. Ci sono parole in MAIUSCOLO usate come enfasi? Riscrivile in minuscolo.",
+      "6. Il testo suona naturale letto ad alta voce?",
+      "7. La lunghezza è adeguata al contesto?",
+      "$0"
+    ]
+  }
+}
