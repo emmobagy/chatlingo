@@ -134,9 +134,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(firebaseUser);
         setUserProfile(profile);
+
+        // Set cookies for middleware access check
+        const isAdmin = adminUids.includes(firebaseUser.uid);
+        const isEnabled = isAdmin || profile?.enabled === true;
+        document.cookie = `cl_uid=${firebaseUser.uid}; path=/; SameSite=Lax`;
+        document.cookie = `cl_enabled=${isEnabled}; path=/; SameSite=Lax`;
       } else {
         setUser(null);
         setUserProfile(null);
+        // Clear cookies on logout
+        document.cookie = 'cl_uid=; path=/; max-age=0';
+        document.cookie = 'cl_enabled=; path=/; max-age=0';
       }
       setLoading(false);
     });

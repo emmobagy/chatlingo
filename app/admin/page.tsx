@@ -43,6 +43,7 @@ interface AdminUser {
   createdAt: Ts | null; lastSeen: Ts | null;
   stats: { totalConversations: number; streak: number; minutesToday?: number; minutesTotal?: number; conversationsToday?: number; lastActiveDate?: string };
   banned?: boolean; bannedReason?: string | null;
+  enabled?: boolean;
   tutor: { name: string } | null;
   practiceProgress?: { currentDay: number; completedDays: number[] };
   onboardingComplete?: boolean;
@@ -524,7 +525,10 @@ function DashboardView({ users, todayUsage, chartData, adminUid, refreshProfile,
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${SUB_COLOR[u.subscription] ?? 'bg-gray-100 text-gray-600'}`}>{u.subscription}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${SUB_COLOR[u.subscription] ?? 'bg-gray-100 text-gray-600'}`}>{u.subscription}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>{u.enabled ? 'enabled' : 'disabled'}</span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 text-xs">{u.stats?.streak ?? 0}🔥</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{fmtDate(u.createdAt)}</td>
@@ -1113,7 +1117,21 @@ function UserModal({ user, adminUid, onClose, onResetDone }: {
 }) {
   const [showReset, setShowReset] = useState(false);
   const [showBan, setShowBan] = useState(false);
+  const [enablingBusy, setEnablingBusy] = useState(false);
   const online = isOnline(user);
+  const isEnabled = user.enabled === true;
+
+  async function toggleEnabled() {
+    setEnablingBusy(true);
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { enabled: !isEnabled });
+      await logAdminAction(adminUid, isEnabled ? 'disable_user' : 'enable_user', { targetUid: user.uid, targetEmail: user.email });
+      onResetDone(`✓ User "${user.email}" ${isEnabled ? 'disabled' : 'enabled'}.`);
+      onClose();
+    } catch { /* silent */ } finally {
+      setEnablingBusy(false);
+    }
+  }
 
   return (
     <>
@@ -1166,7 +1184,17 @@ function UserModal({ user, adminUid, onClose, onResetDone }: {
                 <strong>Banned:</strong> {user.bannedReason}
               </div>
             )}
-            <div className="pt-1 flex justify-end gap-2">
+            <div className="pt-1 flex justify-end gap-2 flex-wrap">
+              <button
+                onClick={toggleEnabled}
+                disabled={enablingBusy}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors disabled:opacity-50 ${isEnabled ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}`}
+              >
+                {enablingBusy
+                  ? <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                  : <CheckCircle className="w-3.5 h-3.5" />}
+                {isEnabled ? 'Disable access' : 'Enable access'}
+              </button>
               <button
                 onClick={() => setShowBan(true)}
                 className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors ${user.banned ? 'bg-green-50 hover:bg-green-100 text-green-700' : 'bg-orange-50 hover:bg-orange-100 text-orange-700'}`}

@@ -5,15 +5,20 @@ import { getAdminDb } from '@/lib/firebaseAdmin';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// Map Stripe Price ID → SubscriptionTier
 function tierFromPriceId(priceId: string): string {
   const map: Record<string, string> = {
-    [process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID!]:    'pro',
-    [process.env.NEXT_PUBLIC_STRIPE_QUARTERLY_PRICE_ID!]:  'pro',
-    [process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID!]:     'pro',
-    [process.env.NEXT_PUBLIC_STRIPE_LAUNCH_PRICE_ID!]:     'pro',
+    [process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID!]:   'pro',
+    [process.env.NEXT_PUBLIC_STRIPE_QUARTERLY_PRICE_ID!]: 'pro',
+    [process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID!]:    'pro',
+    [process.env.NEXT_PUBLIC_STRIPE_LAUNCH_PRICE_ID!]:    'pro',
   };
   return map[priceId] ?? 'pro';
+}
+
+function getSubId(invoice: Stripe.Invoice): string | null {
+  const s = (invoice as unknown as { subscription?: string | { id: string } }).subscription;
+  if (!s) return null;
+  return typeof s === 'string' ? s : s.id;
 }
 
 export async function POST(req: NextRequest) {
@@ -39,10 +44,14 @@ export async function POST(req: NextRequest) {
         const uid = session.metadata?.uid;
         if (!uid) break;
 
-        const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+        const subId = typeof session.subscription === 'string'
+          ? session.subscription : session.subscription?.id;
+        if (!subId) break;
+
+        const sub = await stripe.subscriptions.retrieve(subId);
         const priceId = sub.items.data[0]?.price.id ?? '';
         const tier = tierFromPriceId(priceId);
-        const endsAt = new Date(sub.current_period_end * 1000);
+        const endsAt = new Date((sub as unknown as { current_period_end: number }).current_period_end * 1000);
 
         await db.collection('users').doc(uid).update({
           subscription: tier,
@@ -56,14 +65,14 @@ export async function POST(req: NextRequest) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subId = invoice.subscription as string;
+        const subId = getSubId(invoice);
         if (!subId) break;
 
         const sub = await stripe.subscriptions.retrieve(subId);
         const uid = sub.metadata?.uid;
         if (!uid) break;
 
-        const endsAt = new Date(sub.current_period_end * 1000);
+        const endsAt = new Date((sub as unknown as { current_period_end: number }).current_period_end * 1000);
         await db.collection('users').doc(uid).update({
           subscriptionStatus: 'active',
           subscriptionEndsAt: endsAt,
@@ -73,7 +82,7 @@ export async function POST(req: NextRequest) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subId = invoice.subscription as string;
+        const subId = getSubId(invoice);
         if (!subId) break;
 
         const sub = await stripe.subscriptions.retrieve(subId);
@@ -103,8 +112,9 @@ export async function POST(req: NextRequest) {
         const uid = sub.metadata?.uid;
         if (!uid) break;
 
-        const endsAt = new Date(sub.current_period_end * 1000);
-        const status = sub.cancel_at_period_end ? 'canceling' : 'active';
+        const raw = sub as unknown as { current_period_end: number; cancel_at_period_end: boolean };
+        const endsAt = new Date(raw.current_period_end * 1000);
+        const status = raw.cancel_at_period_end ? 'canceling' : 'active';
         await db.collection('users').doc(uid).update({
           subscriptionStatus: status,
           subscriptionEndsAt: endsAt,
@@ -119,5 +129,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ received: true });
 }
-
-export const config = { api: { bodyParser: false } };

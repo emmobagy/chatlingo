@@ -22,6 +22,7 @@ export interface UserProfile {
   email: string;
   role?: 'admin' | 'user';
   banned?: boolean;
+  enabled?: boolean;
   bannedAt?: Date | null;
   bannedBy?: string | null;
   bannedReason?: string | null;
