@@ -35,6 +35,7 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
+      console.error('[login]', code, err);
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setError(t.errorInvalidCredential);
       } else if (code === 'auth/too-many-requests') {
@@ -51,9 +52,10 @@ export default function LoginPage() {
     setError('');
     setGoogleLoading(true);
     try {
-      const { isNewUser } = await signInWithGoogle();
-      router.push(isNewUser ? '/onboarding' : '/dashboard');
-    } catch {
+      await signInWithGoogle();
+      router.push('/dashboard');
+    } catch (err: unknown) {
+      console.error('[login-google]', err);
       setError(t.errorGoogleFailed);
     } finally {
       setGoogleLoading(false);

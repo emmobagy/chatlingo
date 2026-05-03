@@ -41,9 +41,10 @@ export default function SignupPage() {
     setSubmitting(true);
     try {
       await signUp(email, password, displayName);
-      router.push('/onboarding');
+      router.push('/coming-soon?welcome=1');
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
+      console.error('[signup]', code, err);
       if (code === 'auth/email-already-in-use') {
         setError(t.errorEmailInUse);
       } else if (code === 'auth/weak-password') {
@@ -60,9 +61,10 @@ export default function SignupPage() {
     setError('');
     setGoogleLoading(true);
     try {
-      const { isNewUser } = await signInWithGoogle();
-      router.push(isNewUser ? '/onboarding' : '/dashboard');
-    } catch {
+      await signInWithGoogle();
+      router.push('/coming-soon?welcome=1');
+    } catch (err: unknown) {
+      console.error('[signup-google]', err);
       setError(t.errorGoogleFailed);
     } finally {
       setGoogleLoading(false);

@@ -18,11 +18,11 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
-      // Firebase / Google APIs
-      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net wss://*.firebaseio.com wss://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://apis.google.com https://*.google.com https://api.openai.com",
-      // Scripts — Next.js needs 'unsafe-inline' + 'unsafe-eval' in dev
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.googleapis.com",
+      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://www.google.com https://recaptcha.net",
+      // Firebase / Google APIs + reCAPTCHA Enterprise (required by Firebase Auth since 2024)
+      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net wss://*.firebaseio.com wss://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://apis.google.com https://*.google.com https://api.openai.com https://www.gstatic.com https://*.firebaseapp.com https://recaptcha.net https://www.recaptcha.net",
+      // Scripts — gstatic.com required by Firebase Auth reCAPTCHA
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.googleapis.com https://www.gstatic.com https://www.google.com https://recaptcha.net",
       // Styles
       "style-src 'self' 'unsafe-inline'",
       // Images — allow data URIs and Firebase storage

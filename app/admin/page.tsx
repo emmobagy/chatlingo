@@ -157,12 +157,12 @@ function TotpGate({ uid, onVerified }: { uid: string; onVerified: () => void }) 
         </div>
         <div className="bg-slate-900 border border-white/10 rounded-2xl p-8">
           <h2 className="text-white font-semibold text-lg mb-1">Secure Access</h2>
-          <p className="text-slate-400 text-sm mb-6">Enter your admin password or 6-digit TOTP code.</p>
+          <p className="text-slate-400 text-sm mb-6">Enter your admin password or OTP code.</p>
           <input
             ref={inputRef} type="password" value={code}
             onChange={(e) => setCode(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && verify()}
-            placeholder="Password or 000000"
+            placeholder="Password or OTP code"
             className="w-full bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4 text-sm"
           />
           {error && (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { MessageCircle, Send, Check, Loader2, ChevronRight } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -66,6 +66,8 @@ type Mode = 'waitlist' | 'login' | 'signup';
 export default function ComingSoonPage() {
   const { signIn, signInWithGoogle, signUp } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const showWelcome = searchParams.get('welcome') === '1';
 
   const [mode, setMode] = useState<Mode>('waitlist');
   const [isDark, setIsDark] = useState(false);
@@ -119,8 +121,9 @@ export default function ComingSoonPage() {
     setAuthError('');
     try {
       await signInWithGoogle();
-      router.push('/coming-soon');
-    } catch {
+      router.push('/coming-soon?welcome=1');
+    } catch (err: unknown) {
+      console.error('[coming-soon-google]', err);
       setAuthError('Google sign-in failed. Try again.');
     } finally {
       setGoogleLoading(false);
@@ -152,13 +155,17 @@ export default function ComingSoonPage() {
         setWaitlistStatus('success');
       }
     } catch (err: unknown) {
+      const code = (err as { code?: string }).code ?? '';
       const msg = err instanceof Error ? err.message : '';
+      console.error('[coming-soon-auth]', code, err);
       if (msg === 'EMAIL_NOT_VERIFIED') {
         setAuthError('Controlla la tua email per verificare l\'account.');
-      } else if (msg.includes('email-already-in-use')) {
+      } else if (code === 'auth/email-already-in-use') {
         setAuthError('Email già registrata. Prova ad accedere.');
-      } else if (msg.includes('wrong-password') || msg.includes('invalid-credential')) {
+      } else if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setAuthError('Email o password non corretti.');
+      } else if (code === 'auth/user-not-found') {
+        setAuthError('Nessun account trovato con questa email.');
       } else {
         setAuthError('Qualcosa è andato storto. Riprova.');
       }
@@ -216,6 +223,14 @@ export default function ComingSoonPage() {
             I tuoi tutor AI personali stanno facendo i bagagli. Iscriviti e sarai il primo a sapere quando apriamo.
           </p>
         </div>
+
+        {/* Welcome banner dopo registrazione */}
+        {showWelcome && (
+          <div className="w-full max-w-sm mb-4 bg-green-500/20 border border-green-400/40 rounded-2xl px-5 py-3 flex items-center gap-3">
+            <Check className="w-5 h-5 text-green-400 shrink-0" />
+            <p className="text-sm text-green-200 font-medium">Registrazione completata. Ti avviseremo quando l'app sarà disponibile.</p>
+          </div>
+        )}
 
         {/* Card */}
         <div className={`w-full max-w-sm rounded-2xl p-6 border transition-all duration-[2000ms] ${cardBg}`}>

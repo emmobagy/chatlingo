@@ -74,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       stripeSubscriptionId: null,
       subscriptionEndsAt: null,
       trialUsed: false,
+      enabled: false,
       stats: {
         streak: 0,
         longestStreak: 0,
