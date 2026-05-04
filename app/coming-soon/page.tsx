@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 import { Mail, ShieldCheck, Cpu, Users } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useUILanguage } from '@/contexts/UILanguageContext';
 
-// ── Translations ──────────────────────────────────────────────────────────────
 const T: Record<string, {
   coming: string; sub1: string; sub2: string;
   placeholder: string; cta: string; privacy: string;
@@ -31,47 +29,6 @@ const T: Record<string, {
   nl: { coming: 'BINNENKORT', sub1: 'De toekomst van leren is gepersonaliseerd.', sub2: 'AI-tutors die jou begrijpen. Leren. Verheffen.', placeholder: 'Voer je e-mailadres in', cta: 'MELD MIJ AAN', privacy: 'We respecteren je privacy. Geen spam.', badge1: 'Gepersonaliseerd Leren', badge2: 'Adaptieve AI-technologie', badge3: 'Vertrouwd & Veilig', success: 'Je staat op de lijst!', successSub: 'We laten je weten zodra we openen.', duplicate: 'Al aangemeld!', duplicateSub: 'Dit e-mailadres staat al op de lijst.', error: 'Er ging iets mis. Probeer het opnieuw.' },
   pl: { coming: 'WKRÓTCE', sub1: 'Przyszłość nauki jest spersonalizowana.', sub2: 'Tutorzy AI, którzy cię rozumieją. Uczą. Rozwijają.', placeholder: 'Wpisz swój adres email', cta: 'POWIADOM MNIE', privacy: 'Szanujemy Twoją prywatność. Żadnego spamu.', badge1: 'Spersonalizowana Nauka', badge2: 'Adaptacyjna Technologia AI', badge3: 'Zaufany i Bezpieczny', success: 'Jesteś na liście!', successSub: 'Powiadomimy cię, gdy się otworzymy.', duplicate: 'Już zapisany!', duplicateSub: 'Ten email jest już na liście.', error: 'Coś poszło nie tak. Spróbuj ponownie.' },
 };
-
-// ── Floating language bubbles ─────────────────────────────────────────────────
-const LEFT_LANGS  = [
-  { flag: '🇺🇸', label: 'English'    },
-  { flag: '🇪🇸', label: 'Spanish'    },
-  { flag: '🇫🇷', label: 'French'     },
-  { flag: '🇮🇹', label: 'Italian'    },
-  { flag: '🇩🇪', label: 'German'     },
-];
-const RIGHT_LANGS = [
-  { flag: '🇧🇷', label: 'Portuguese' },
-  { flag: '🇸🇦', label: 'Arabic'     },
-  { flag: '🇯🇵', label: 'Japanese'   },
-  { flag: '🇰🇷', label: 'Korean'     },
-  { flag: '🇨🇳', label: 'Chinese'    },
-];
-
-const TUTORS = [
-  { src: '/tutors/Tutor-3.png', z: 10,  scale: 0.82 },
-  { src: '/tutors/Tutor-1.png', z: 20,  scale: 0.90 },
-  { src: '/tutors/Tutor-5.png', z: 30,  scale: 1.00 },
-  { src: '/tutors/Tutor-2.png', z: 20,  scale: 0.90 },
-  { src: '/tutors/Tutor-4.png', z: 10,  scale: 0.82 },
-];
-
-function FloatingBubble({ flag, label, delay, side }: { flag: string; label: string; delay: number; side: 'left' | 'right' }) {
-  return (
-    <div
-      className="flex flex-col items-center gap-1.5 select-none"
-      style={{
-        animation: `float-${side} ${5 + delay * 0.7}s ease-in-out infinite`,
-        animationDelay: `${delay * 0.4}s`,
-      }}
-    >
-      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-lg shadow-purple-200/40 flex items-center justify-center text-3xl md:text-4xl">
-        {flag}
-      </div>
-      <span className="text-[11px] font-medium text-slate-500">{label}</span>
-    </div>
-  );
-}
 
 export default function ComingSoonPage() {
   const { uiLang, mounted } = useUILanguage();
@@ -101,180 +58,125 @@ export default function ComingSoonPage() {
   }
 
   return (
-    <>
-      {/* Float keyframes injected once */}
-      <style>{`
-        @keyframes float-left  { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
-        @keyframes float-right { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)}  }
-        @keyframes breathe     { 0%,100%{transform:scaleY(1)}       50%{transform:scaleY(1.012)}     }
-      `}</style>
+    <div className="relative min-h-screen overflow-hidden bg-[#e8e8ff]" dir={isRTL ? 'rtl' : 'ltr'}>
 
-      <div className="relative min-h-screen overflow-hidden bg-[#f0f0ff]" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Video — full screen background, no text overlay needed */}
+      <video
+        autoPlay muted loop playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        src="/coming-soon-banner.mp4"
+      />
 
-        {/* ── Video background ── */}
-        <video
-          autoPlay muted loop playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          src="/coming-soon-banner.mp4"
-        />
-        {/* very subtle light overlay so text stays readable */}
-        <div className="absolute inset-0 bg-white/10" />
+      {/* Top gradient overlay — covers video text at top, keeps tutors visible at bottom */}
+      <div className="absolute inset-0"
+        style={{ background: 'linear-gradient(to bottom, rgba(232,228,255,0.92) 0%, rgba(232,228,255,0.85) 35%, rgba(232,228,255,0.2) 55%, rgba(232,228,255,0) 70%)' }}
+      />
 
-        {/* ── Page layout ── */}
-        <div className="relative z-10 min-h-screen flex flex-col items-center justify-between px-4 py-8 md:py-10">
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col" dir={isRTL ? 'rtl' : 'ltr'}>
 
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-400/40">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-            </div>
-            <span className="text-xl font-extrabold text-slate-800 tracking-tight">ChatLingo</span>
+        {/* ── Logo top left ── */}
+        <div className="flex items-center gap-2 px-5 pt-5 md:px-8 md:pt-7">
+          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-400/30">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
           </div>
-
-          {/* Main content */}
-          <div className="flex flex-col items-center text-center w-full max-w-5xl gap-0">
-
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight mb-2 md:mb-3 px-2"
-              style={{ background: 'linear-gradient(135deg, #6c3de8 0%, #8b5cf6 50%, #a78bfa 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              {t.coming}
-            </h1>
-            <p className="text-slate-700 font-semibold text-sm md:text-lg mb-1 px-4">{t.sub1}</p>
-            <p className="text-slate-400 text-xs md:text-base mb-4 md:mb-6 px-6">{t.sub2}</p>
-
-            {/* Mobile flags — scrollable row */}
-            <div className="flex md:hidden gap-3 overflow-x-auto pb-2 mb-3 px-4 w-full justify-center flex-wrap">
-              {[...LEFT_LANGS, ...RIGHT_LANGS].map((l) => (
-                <div key={l.label} className="flex flex-col items-center gap-1 flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-md flex items-center justify-center text-2xl">
-                    {l.flag}
-                  </div>
-                  <span className="text-[9px] font-medium text-slate-500">{l.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Tutors + floating bubbles */}
-            <div className="relative flex items-end justify-center w-full">
-
-              {/* Left bubbles — desktop only */}
-              <div className="hidden md:flex flex-col gap-5 mr-6 mb-8 items-end">
-                {LEFT_LANGS.map((l, i) => (
-                  <FloatingBubble key={l.label} flag={l.flag} label={l.label} delay={i} side="left" />
-                ))}
-              </div>
-
-              {/* Tutors row */}
-              <div className="flex items-end justify-center gap-0 md:gap-1">
-                {TUTORS.map((tutor, i) => {
-                  const isCenter = i === 2;
-                  // desktop heights
-                  const heightDk = isCenter ? 320 : i === 1 || i === 3 ? 280 : 240;
-                  // mobile heights (~60% of desktop)
-                  const heightMb = isCenter ? 190 : i === 1 || i === 3 ? 165 : 140;
-                  return (
-                    <div
-                      key={i}
-                      className="relative flex-shrink-0"
-                      style={{
-                        zIndex: tutor.z,
-                        animation: `breathe ${3.5 + i * 0.3}s ease-in-out infinite`,
-                        animationDelay: `${i * 0.5}s`,
-                      }}
-                    >
-                      {/* Mobile size */}
-                      <div className="md:hidden" style={{ width: heightMb * 0.65, height: heightMb, position: 'relative' }}>
-                        <Image src={tutor.src} alt="Tutor" fill className="object-cover object-top" style={{ borderRadius: '50% 50% 0 0' }} />
-                      </div>
-                      {/* Desktop size */}
-                      <div className="hidden md:block" style={{ width: heightDk * 0.65, height: heightDk, position: 'relative' }}>
-                        <Image src={tutor.src} alt="Tutor" fill className="object-cover object-top" style={{ borderRadius: '50% 50% 0 0' }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Right bubbles — desktop only */}
-              <div className="hidden md:flex flex-col gap-5 ml-6 mb-8 items-start">
-                {RIGHT_LANGS.map((l, i) => (
-                  <FloatingBubble key={l.label} flag={l.flag} label={l.label} delay={i} side="right" />
-                ))}
-              </div>
-            </div>
-
-            {/* Waitlist card */}
-            <div className="w-full max-w-lg bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl shadow-purple-200/30 px-4 md:px-6 py-4 md:py-5 -mt-2 mx-4">
-
-              {status === 'success' ? (
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                  <p className="font-bold text-slate-800">{t.success}</p>
-                  <p className="text-sm text-slate-500">{t.successSub}</p>
-                </div>
-              ) : status === 'duplicate' ? (
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <div className="w-11 h-11 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                  <p className="font-bold text-slate-800">{t.duplicate}</p>
-                  <p className="text-sm text-slate-500">{t.duplicateSub}</p>
-                </div>
-              ) : (
-                <>
-                  {/* Mobile: stacked layout / Desktop: row layout */}
-                  <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-3">
-                    <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4">
-                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder={t.placeholder}
-                        className="flex-1 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={status === 'loading'}
-                      className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
-                    >
-                      {status === 'loading' ? '...' : t.cta}
-                    </button>
-                  </form>
-                  {status === 'error' && <p className="text-red-500 text-xs text-center mb-2">{t.error}</p>}
-                  <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{t.privacy}</span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-8 mt-4 md:mt-5 px-4">
-              {[
-                { icon: <Users className="w-4 h-4 text-slate-500" />,       label: t.badge1 },
-                { icon: <Cpu className="w-4 h-4 text-slate-500" />,         label: t.badge2 },
-                { icon: <ShieldCheck className="w-4 h-4 text-slate-500" />, label: t.badge3 },
-              ].map((b) => (
-                <div key={b.label} className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
-                  {b.icon}
-                  <span>{b.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <p className="text-slate-400 text-xs">© 2026 ChatLingo. All rights reserved.</p>
+          <span className="text-xl font-extrabold text-slate-800 tracking-tight">ChatLingo</span>
         </div>
+
+        {/* ── Main text block — sits over gradient area ── */}
+        <div className="flex flex-col items-center text-center px-4 pt-6 md:pt-10">
+
+          <h1
+            className="font-black tracking-tight leading-none mb-2 md:mb-3"
+            style={{
+              fontSize: 'clamp(2.8rem, 10vw, 5.5rem)',
+              background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #a78bfa 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {t.coming}
+          </h1>
+
+          <p className="text-slate-700 font-semibold text-sm md:text-lg mb-1 max-w-md">{t.sub1}</p>
+          <p className="text-slate-500 text-xs md:text-sm max-w-sm md:max-w-md">{t.sub2}</p>
+
+          {/* ── Waitlist form ── */}
+          <div className="w-full max-w-md mt-5 md:mt-7">
+            {status === 'success' ? (
+              <div className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl px-6 py-5 shadow-lg">
+                <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="font-bold text-slate-800">{t.success}</p>
+                <p className="text-sm text-slate-500">{t.successSub}</p>
+              </div>
+            ) : status === 'duplicate' ? (
+              <div className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl px-6 py-5 shadow-lg">
+                <div className="w-11 h-11 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="font-bold text-slate-800">{t.duplicate}</p>
+                <p className="text-sm text-slate-500">{t.duplicateSub}</p>
+              </div>
+            ) : (
+              <div className="bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl px-4 md:px-5 py-4 shadow-xl shadow-purple-200/30">
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-3">
+                  <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 md:px-4">
+                    <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t.placeholder}
+                      className="flex-1 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent min-w-0"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm px-5 py-3 rounded-xl transition-all disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
+                  >
+                    {status === 'loading' ? '...' : t.cta}
+                  </button>
+                </form>
+                {status === 'error' && <p className="text-red-500 text-xs text-center mb-2">{t.error}</p>}
+                <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>{t.privacy}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Badges ── */}
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-8 mt-4 md:mt-5 px-4">
+            {[
+              { icon: <Users className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />,       label: t.badge1 },
+              { icon: <Cpu className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />,         label: t.badge2 },
+              { icon: <ShieldCheck className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />, label: t.badge3 },
+            ].map((b) => (
+              <div key={b.label} className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
+                {b.icon}
+                <span>{b.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Spacer — lets tutors in video show through ── */}
+        <div className="flex-1" />
+
+        {/* ── Footer ── */}
+        <p className="text-center text-slate-400/60 text-xs pb-4">© 2026 ChatLingo. All rights reserved.</p>
       </div>
-    </>
+    </div>
   );
 }
