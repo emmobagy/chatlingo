@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Mail, ShieldCheck, Cpu, Users } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useUILanguage } from '@/contexts/UILanguageContext';
 
+// ── Translations ──────────────────────────────────────────────────────────────
 const T: Record<string, {
   coming: string; sub1: string; sub2: string;
   placeholder: string; cta: string; privacy: string;
@@ -14,9 +16,9 @@ const T: Record<string, {
   duplicate: string; duplicateSub: string; error: string;
 }> = {
   en: { coming: 'COMING SOON', sub1: 'The future of learning is personalized.', sub2: 'AI tutors that understand you. Teach you. Elevate you.', placeholder: 'Enter your email address', cta: 'NOTIFY ME', privacy: 'We respect your privacy. No spam, ever.', badge1: 'Personalized Learning', badge2: 'Adaptive AI Technology', badge3: 'Trusted & Secure', success: "You're on the list!", successSub: "We'll notify you as soon as we open.", duplicate: 'Already signed up!', duplicateSub: 'Your email is already on the waitlist.', error: 'Something went wrong. Try again.' },
-  it: { coming: 'COMING SOON', sub1: 'Il futuro dell\'apprendimento è personalizzato.', sub2: 'Tutor AI che ti capiscono. Ti insegnano. Ti elevano.', placeholder: 'Inserisci la tua email', cta: 'AVVISAMI', privacy: 'Rispettiamo la tua privacy. Niente spam.', badge1: 'Apprendimento Personalizzato', badge2: 'Tecnologia AI Adattiva', badge3: 'Sicuro & Affidabile', success: 'Sei nella lista!', successSub: 'Ti avviseremo non appena apriamo.', duplicate: 'Già iscritto!', duplicateSub: 'Questa email è già nella lista.', error: 'Qualcosa è andato storto. Riprova.' },
+  it: { coming: 'COMING SOON', sub1: "Il futuro dell'apprendimento è personalizzato.", sub2: 'Tutor AI che ti capiscono. Ti insegnano. Ti elevano.', placeholder: 'Inserisci la tua email', cta: 'AVVISAMI', privacy: 'Rispettiamo la tua privacy. Niente spam.', badge1: 'Apprendimento Personalizzato', badge2: 'Tecnologia AI Adattiva', badge3: 'Sicuro & Affidabile', success: 'Sei nella lista!', successSub: 'Ti avviseremo non appena apriamo.', duplicate: 'Già iscritto!', duplicateSub: 'Questa email è già nella lista.', error: 'Qualcosa è andato storto. Riprova.' },
   es: { coming: 'PRÓXIMAMENTE', sub1: 'El futuro del aprendizaje es personalizado.', sub2: 'Tutores de IA que te entienden. Te enseñan. Te elevan.', placeholder: 'Ingresa tu email', cta: 'NOTIFÍCAME', privacy: 'Respetamos tu privacidad. Sin spam.', badge1: 'Aprendizaje Personalizado', badge2: 'Tecnología IA Adaptiva', badge3: 'Confiable y Seguro', success: '¡Estás en la lista!', successSub: 'Te avisaremos en cuanto abramos.', duplicate: '¡Ya registrado!', duplicateSub: 'Este email ya está en la lista.', error: 'Algo salió mal. Inténtalo de nuevo.' },
-  fr: { coming: 'BIENTÔT', sub1: 'L\'avenir de l\'apprentissage est personnalisé.', sub2: 'Des tuteurs IA qui te comprennent. T\'enseignent. T\'élèvent.', placeholder: 'Entre ton adresse email', cta: 'ME NOTIFIER', privacy: 'Nous respectons ta vie privée. Zéro spam.', badge1: 'Apprentissage Personnalisé', badge2: 'Technologie IA Adaptative', badge3: 'Sécurisé & Fiable', success: 'Tu es sur la liste !', successSub: 'On te préviendra dès qu\'on ouvre.', duplicate: 'Déjà inscrit !', duplicateSub: 'Cet email est déjà sur la liste.', error: 'Une erreur est survenue. Réessaie.' },
+  fr: { coming: 'BIENTÔT', sub1: "L'avenir de l'apprentissage est personnalisé.", sub2: "Des tuteurs IA qui te comprennent. T'enseignent. T'élèvent.", placeholder: 'Entre ton adresse email', cta: 'ME NOTIFIER', privacy: 'Nous respectons ta vie privée. Zéro spam.', badge1: 'Apprentissage Personnalisé', badge2: 'Technologie IA Adaptative', badge3: 'Sécurisé & Fiable', success: 'Tu es sur la liste !', successSub: "On te préviendra dès qu'on ouvre.", duplicate: 'Déjà inscrit !', duplicateSub: 'Cet email est déjà sur la liste.', error: 'Une erreur est survenue. Réessaie.' },
   de: { coming: 'DEMNÄCHST', sub1: 'Die Zukunft des Lernens ist personalisiert.', sub2: 'KI-Tutoren, die dich verstehen. Dich lehren. Dich voranbringen.', placeholder: 'Deine E-Mail-Adresse', cta: 'BENACHRICHTIGE MICH', privacy: 'Wir respektieren deine Privatsphäre. Kein Spam.', badge1: 'Personalisiertes Lernen', badge2: 'Adaptive KI-Technologie', badge3: 'Vertrauenswürdig & Sicher', success: 'Du bist auf der Liste!', successSub: 'Wir benachrichtigen dich bei der Eröffnung.', duplicate: 'Bereits angemeldet!', duplicateSub: 'Diese E-Mail ist bereits auf der Liste.', error: 'Etwas ist schiefgelaufen. Versuch es nochmal.' },
   pt: { coming: 'EM BREVE', sub1: 'O futuro do aprendizado é personalizado.', sub2: 'Tutores de IA que te entendem. Te ensinam. Te elevam.', placeholder: 'Digite seu email', cta: 'ME AVISE', privacy: 'Respeitamos sua privacidade. Sem spam.', badge1: 'Aprendizado Personalizado', badge2: 'Tecnologia IA Adaptativa', badge3: 'Confiável e Seguro', success: 'Você está na lista!', successSub: 'Avisaremos assim que abrirmos.', duplicate: 'Já cadastrado!', duplicateSub: 'Este email já está na lista.', error: 'Algo deu errado. Tente novamente.' },
   ja: { coming: 'もうすぐ公開', sub1: '学びの未来はパーソナライズされている。', sub2: 'あなたを理解し、教え、高めるAIチューター。', placeholder: 'メールアドレスを入力', cta: '通知を受け取る', privacy: 'プライバシーを尊重します。スパムなし。', badge1: 'パーソナライズ学習', badge2: '適応型AI技術', badge3: '安全・安心', success: 'リストに登録されました！', successSub: 'オープン時にお知らせします。', duplicate: '既に登録済みです！', duplicateSub: 'このメールは既にリストにあります。', error: 'エラーが発生しました。再試行してください。' },
@@ -29,6 +31,92 @@ const T: Record<string, {
   nl: { coming: 'BINNENKORT', sub1: 'De toekomst van leren is gepersonaliseerd.', sub2: 'AI-tutors die jou begrijpen. Leren. Verheffen.', placeholder: 'Voer je e-mailadres in', cta: 'MELD MIJ AAN', privacy: 'We respecteren je privacy. Geen spam.', badge1: 'Gepersonaliseerd Leren', badge2: 'Adaptieve AI-technologie', badge3: 'Vertrouwd & Veilig', success: 'Je staat op de lijst!', successSub: 'We laten je weten zodra we openen.', duplicate: 'Al aangemeld!', duplicateSub: 'Dit e-mailadres staat al op de lijst.', error: 'Er ging iets mis. Probeer het opnieuw.' },
   pl: { coming: 'WKRÓTCE', sub1: 'Przyszłość nauki jest spersonalizowana.', sub2: 'Tutorzy AI, którzy cię rozumieją. Uczą. Rozwijają.', placeholder: 'Wpisz swój adres email', cta: 'POWIADOM MNIE', privacy: 'Szanujemy Twoją prywatność. Żadnego spamu.', badge1: 'Spersonalizowana Nauka', badge2: 'Adaptacyjna Technologia AI', badge3: 'Zaufany i Bezpieczny', success: 'Jesteś na liście!', successSub: 'Powiadomimy cię, gdy się otworzymy.', duplicate: 'Już zapisany!', duplicateSub: 'Ten email jest już na liście.', error: 'Coś poszło nie tak. Spróbuj ponownie.' },
 };
+
+// ── Language bubbles ──────────────────────────────────────────────────────────
+const BUBBLES = [
+  { flag: '🇺🇸', label: 'English',    side: 'left'  },
+  { flag: '🇪🇸', label: 'Spanish',    side: 'left'  },
+  { flag: '🇫🇷', label: 'French',     side: 'left'  },
+  { flag: '🇮🇹', label: 'Italian',    side: 'left'  },
+  { flag: '🇩🇪', label: 'German',     side: 'left'  },
+  { flag: '🇧🇷', label: 'Portuguese', side: 'right' },
+  { flag: '🇸🇦', label: 'Arabic',     side: 'right' },
+  { flag: '🇯🇵', label: 'Japanese',   side: 'right' },
+  { flag: '🇰🇷', label: 'Korean',     side: 'right' },
+  { flag: '🇨🇳', label: 'Chinese',    side: 'right' },
+];
+
+// ── Seeded random (stable across renders) ────────────────────────────────────
+function seededRand(seed: number) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+
+// ── Floating bubble — fully random organic motion via JS animation ────────────
+function FloatingBubble({ flag, label, index, side }: {
+  flag: string; label: string; index: number; side: 'left' | 'right';
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Each bubble gets its own unique random seed
+    const seed = index * 7 + (side === 'left' ? 0 : 100);
+    const r = (offset: number) => seededRand(seed + offset);
+
+    // Random starting position within its column
+    const startX = (r(0) - 0.5) * 60;   // ±30px horizontal
+    const startY = r(1) * 80;            // 0–80% vertical spread
+
+    // Random motion params — each bubble drifts differently
+    const duration  = 5000 + r(2) * 6000;   // 5–11s per cycle
+    const rangeX    = 25  + r(3) * 35;      // 25–60px horizontal drift
+    const rangeY    = 20  + r(4) * 40;      // 20–60px vertical drift
+    const phaseX    = r(5) * Math.PI * 2;   // random phase offset
+    const phaseY    = r(6) * Math.PI * 2;
+
+    el.style.position = 'absolute';
+    el.style.top      = `${startY}%`;
+    el.style[side === 'left' ? 'left' : 'right'] = `${10 + r(7) * 40}%`;
+
+    let start: number | null = null;
+    let raf: number;
+
+    function animate(ts: number) {
+      if (!start) start = ts;
+      const elapsed = (ts - start) / duration;
+      const tx = Math.sin(elapsed * Math.PI * 2 + phaseX) * rangeX;
+      const ty = Math.sin(elapsed * Math.PI * 2 * 0.7 + phaseY) * rangeY;
+      el!.style.transform = `translate(${tx}px, ${ty}px)`;
+      raf = requestAnimationFrame(animate);
+    }
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [index, side]);
+
+  return (
+    <div ref={ref} className="flex flex-col items-center gap-1 select-none pointer-events-none">
+      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/75 backdrop-blur-md border border-white/90 shadow-lg shadow-purple-200/50 flex items-center justify-center text-3xl">
+        {flag}
+      </div>
+      <span className="text-[10px] font-semibold text-slate-500 bg-white/60 rounded-full px-2 py-0.5">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// ── Tutors ────────────────────────────────────────────────────────────────────
+const TUTORS = [
+  { src: '/tutors/Tutor-3.png' },
+  { src: '/tutors/Tutor-1.png' },
+  { src: '/tutors/Tutor-5.png' },
+  { src: '/tutors/Tutor-2.png' },
+  { src: '/tutors/Tutor-4.png' },
+];
 
 export default function ComingSoonPage() {
   const { uiLang, mounted } = useUILanguage();
@@ -57,27 +145,41 @@ export default function ComingSoonPage() {
     }
   }
 
+  const leftBubbles  = BUBBLES.filter(b => b.side === 'left');
+  const rightBubbles = BUBBLES.filter(b => b.side === 'right');
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#e8e8ff]" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="relative min-h-screen overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
-      {/* Video — full screen background, no text overlay needed */}
-      <video
-        autoPlay muted loop playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        src="/coming-soon-banner.mp4"
-      />
+      {/* ── Animated gradient background ── */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#ede9fe] via-[#e0e7ff] to-[#ddd6fe]" />
+      {/* Aurora blobs */}
+      <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-purple-300/40 blur-[120px] animate-pulse" style={{ animationDuration: '6s' }} />
+      <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-indigo-300/40 blur-[120px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-violet-200/30 blur-[100px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
 
-      {/* Top gradient overlay — covers video text at top, keeps tutors visible at bottom */}
-      <div className="absolute inset-0"
-        style={{ background: 'linear-gradient(to bottom, rgba(232,228,255,0.92) 0%, rgba(232,228,255,0.85) 35%, rgba(232,228,255,0.2) 55%, rgba(232,228,255,0) 70%)' }}
-      />
+      {/* ── Floating bubbles — desktop only ── */}
+      <div className="hidden md:block absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Left column */}
+        <div className="absolute left-0 top-0 w-[18%] h-full">
+          {leftBubbles.map((b, i) => (
+            <FloatingBubble key={b.label} flag={b.flag} label={b.label} index={i} side="left" />
+          ))}
+        </div>
+        {/* Right column */}
+        <div className="absolute right-0 top-0 w-[18%] h-full">
+          {rightBubbles.map((b, i) => (
+            <FloatingBubble key={b.label} flag={b.flag} label={b.label} index={i + 5} side="right" />
+          ))}
+        </div>
+      </div>
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* ── Page content ── */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center px-4">
 
-        {/* ── Logo top left ── */}
-        <div className="flex items-center gap-2 px-5 pt-5 md:px-8 md:pt-7">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-400/30">
+        {/* Logo */}
+        <div className="flex items-center gap-2 pt-6 md:pt-8 mb-6 md:mb-8">
+          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-400/30">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
@@ -85,98 +187,139 @@ export default function ComingSoonPage() {
           <span className="text-xl font-extrabold text-slate-800 tracking-tight">ChatLingo</span>
         </div>
 
-        {/* ── Main text block — sits over gradient area ── */}
-        <div className="flex flex-col items-center text-center px-4 pt-6 md:pt-10">
+        {/* Headline */}
+        <h1
+          className="font-black tracking-tight leading-none text-center mb-2 px-4"
+          style={{
+            fontSize: 'clamp(2.8rem, 10vw, 5.5rem)',
+            background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #a78bfa 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          {t.coming}
+        </h1>
+        <p className="text-slate-700 font-semibold text-sm md:text-lg text-center mb-1 max-w-md">{t.sub1}</p>
+        <p className="text-slate-400 text-xs md:text-sm text-center max-w-sm md:max-w-md px-4 mb-5 md:mb-6">{t.sub2}</p>
 
-          <h1
-            className="font-black tracking-tight leading-none mb-2 md:mb-3"
-            style={{
-              fontSize: 'clamp(2.8rem, 10vw, 5.5rem)',
-              background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #a78bfa 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            {t.coming}
-          </h1>
-
-          <p className="text-slate-700 font-semibold text-sm md:text-lg mb-1 max-w-md">{t.sub1}</p>
-          <p className="text-slate-500 text-xs md:text-sm max-w-sm md:max-w-md">{t.sub2}</p>
-
-          {/* ── Waitlist form ── */}
-          <div className="w-full max-w-md mt-5 md:mt-7">
-            {status === 'success' ? (
-              <div className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl px-6 py-5 shadow-lg">
-                <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p className="font-bold text-slate-800">{t.success}</p>
-                <p className="text-sm text-slate-500">{t.successSub}</p>
+        {/* Mobile bubbles — horizontal scrollable row */}
+        <div className="flex md:hidden gap-3 overflow-x-auto pb-2 mb-4 px-2 w-full no-scrollbar">
+          {BUBBLES.map((b) => (
+            <div key={b.label} className="flex flex-col items-center gap-1 flex-shrink-0">
+              <div className="w-11 h-11 rounded-full bg-white/75 border border-white/90 shadow-md flex items-center justify-center text-2xl">
+                {b.flag}
               </div>
-            ) : status === 'duplicate' ? (
-              <div className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl px-6 py-5 shadow-lg">
-                <div className="w-11 h-11 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p className="font-bold text-slate-800">{t.duplicate}</p>
-                <p className="text-sm text-slate-500">{t.duplicateSub}</p>
-              </div>
-            ) : (
-              <div className="bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl px-4 md:px-5 py-4 shadow-xl shadow-purple-200/30">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-3">
-                  <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 md:px-4">
-                    <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder={t.placeholder}
-                      className="flex-1 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent min-w-0"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm px-5 py-3 rounded-xl transition-all disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
-                  >
-                    {status === 'loading' ? '...' : t.cta}
-                  </button>
-                </form>
-                {status === 'error' && <p className="text-red-500 text-xs text-center mb-2">{t.error}</p>}
-                <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span>{t.privacy}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Badges ── */}
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-8 mt-4 md:mt-5 px-4">
-            {[
-              { icon: <Users className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />,       label: t.badge1 },
-              { icon: <Cpu className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />,         label: t.badge2 },
-              { icon: <ShieldCheck className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />, label: t.badge3 },
-            ].map((b) => (
-              <div key={b.label} className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
-                {b.icon}
-                <span>{b.label}</span>
-              </div>
-            ))}
-          </div>
+              <span className="text-[9px] font-medium text-slate-500">{b.label}</span>
+            </div>
+          ))}
         </div>
 
-        {/* ── Spacer — lets tutors in video show through ── */}
-        <div className="flex-1" />
+        {/* Tutors */}
+        <div className="flex items-end justify-center w-full max-w-2xl mb-0">
+          {TUTORS.map((tutor, i) => {
+            const isCenter = i === 2;
+            const isMid    = i === 1 || i === 3;
+            const hDk = isCenter ? 300 : isMid ? 260 : 220;
+            const hMb = isCenter ? 180 : isMid ? 155 : 130;
+            const delay = i * 0.6;
+            return (
+              <div
+                key={i}
+                className="relative flex-shrink-0"
+                style={{
+                  zIndex: isCenter ? 30 : isMid ? 20 : 10,
+                  animation: `breathe ${3.5 + i * 0.4}s ease-in-out infinite`,
+                  animationDelay: `${delay}s`,
+                }}
+              >
+                <div className="md:hidden" style={{ width: hMb * 0.65, height: hMb, position: 'relative' }}>
+                  <Image src={tutor.src} alt="AI Tutor" fill className="object-cover object-top" style={{ borderRadius: '50% 50% 0 0' }} />
+                </div>
+                <div className="hidden md:block" style={{ width: hDk * 0.65, height: hDk, position: 'relative' }}>
+                  <Image src={tutor.src} alt="AI Tutor" fill className="object-cover object-top" style={{ borderRadius: '50% 50% 0 0' }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-        {/* ── Footer ── */}
-        <p className="text-center text-slate-400/60 text-xs pb-4">© 2026 ChatLingo. All rights reserved.</p>
+        {/* Waitlist card */}
+        <div className="w-full max-w-md bg-white/65 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl shadow-purple-200/40 px-4 md:px-6 py-4 md:py-5 -mt-1 mx-4">
+          {status === 'success' ? (
+            <div className="flex flex-col items-center gap-2 py-2">
+              <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="font-bold text-slate-800">{t.success}</p>
+              <p className="text-sm text-slate-500 text-center">{t.successSub}</p>
+            </div>
+          ) : status === 'duplicate' ? (
+            <div className="flex flex-col items-center gap-2 py-2">
+              <div className="w-11 h-11 bg-indigo-100 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="font-bold text-slate-800">{t.duplicate}</p>
+              <p className="text-sm text-slate-500 text-center">{t.duplicateSub}</p>
+            </div>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-3">
+                <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 md:px-4">
+                  <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.placeholder}
+                    className="flex-1 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent min-w-0"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm px-5 py-3 rounded-xl transition-all disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
+                >
+                  {status === 'loading' ? '...' : t.cta}
+                </button>
+              </form>
+              {status === 'error' && <p className="text-red-500 text-xs text-center mb-2">{t.error}</p>}
+              <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span>{t.privacy}</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-8 mt-4 mb-6 px-4">
+          {[
+            { icon: <Users className="w-3.5 h-3.5 text-slate-400" />,       label: t.badge1 },
+            { icon: <Cpu className="w-3.5 h-3.5 text-slate-400" />,         label: t.badge2 },
+            { icon: <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />, label: t.badge3 },
+          ].map((b) => (
+            <div key={b.label} className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
+              {b.icon}<span>{b.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-slate-400/50 text-xs pb-5">© 2026 ChatLingo. All rights reserved.</p>
       </div>
+
+      <style>{`
+        @keyframes breathe {
+          0%, 100% { transform: scaleY(1) translateY(0px); }
+          50%       { transform: scaleY(1.015) translateY(-4px); }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
