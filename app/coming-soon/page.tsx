@@ -137,17 +137,29 @@ export default function ComingSoonPage() {
           <div className="flex flex-col items-center text-center w-full max-w-5xl gap-0">
 
             {/* Headline */}
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-3"
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight mb-2 md:mb-3 px-2"
               style={{ background: 'linear-gradient(135deg, #6c3de8 0%, #8b5cf6 50%, #a78bfa 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               {t.coming}
             </h1>
-            <p className="text-slate-700 font-semibold text-base md:text-lg mb-1">{t.sub1}</p>
-            <p className="text-slate-400 text-sm md:text-base mb-6">{t.sub2}</p>
+            <p className="text-slate-700 font-semibold text-sm md:text-lg mb-1 px-4">{t.sub1}</p>
+            <p className="text-slate-400 text-xs md:text-base mb-4 md:mb-6 px-6">{t.sub2}</p>
+
+            {/* Mobile flags — scrollable row */}
+            <div className="flex md:hidden gap-3 overflow-x-auto pb-2 mb-3 px-4 w-full justify-center flex-wrap">
+              {[...LEFT_LANGS, ...RIGHT_LANGS].map((l) => (
+                <div key={l.label} className="flex flex-col items-center gap-1 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-md flex items-center justify-center text-2xl">
+                    {l.flag}
+                  </div>
+                  <span className="text-[9px] font-medium text-slate-500">{l.label}</span>
+                </div>
+              ))}
+            </div>
 
             {/* Tutors + floating bubbles */}
             <div className="relative flex items-end justify-center w-full">
 
-              {/* Left bubbles */}
+              {/* Left bubbles — desktop only */}
               <div className="hidden md:flex flex-col gap-5 mr-6 mb-8 items-end">
                 {LEFT_LANGS.map((l, i) => (
                   <FloatingBubble key={l.label} flag={l.flag} label={l.label} delay={i} side="left" />
@@ -158,32 +170,34 @@ export default function ComingSoonPage() {
               <div className="flex items-end justify-center gap-0 md:gap-1">
                 {TUTORS.map((tutor, i) => {
                   const isCenter = i === 2;
-                  const height = isCenter ? 320 : i === 1 || i === 3 ? 280 : 240;
+                  // desktop heights
+                  const heightDk = isCenter ? 320 : i === 1 || i === 3 ? 280 : 240;
+                  // mobile heights (~60% of desktop)
+                  const heightMb = isCenter ? 190 : i === 1 || i === 3 ? 165 : 140;
                   return (
                     <div
                       key={i}
                       className="relative flex-shrink-0"
                       style={{
                         zIndex: tutor.z,
-                        width: height * 0.65,
-                        height: height,
                         animation: `breathe ${3.5 + i * 0.3}s ease-in-out infinite`,
                         animationDelay: `${i * 0.5}s`,
                       }}
                     >
-                      <Image
-                        src={tutor.src}
-                        alt="Tutor"
-                        fill
-                        className="object-cover object-top"
-                        style={{ borderRadius: '50% 50% 0 0' }}
-                      />
+                      {/* Mobile size */}
+                      <div className="md:hidden" style={{ width: heightMb * 0.65, height: heightMb, position: 'relative' }}>
+                        <Image src={tutor.src} alt="Tutor" fill className="object-cover object-top" style={{ borderRadius: '50% 50% 0 0' }} />
+                      </div>
+                      {/* Desktop size */}
+                      <div className="hidden md:block" style={{ width: heightDk * 0.65, height: heightDk, position: 'relative' }}>
+                        <Image src={tutor.src} alt="Tutor" fill className="object-cover object-top" style={{ borderRadius: '50% 50% 0 0' }} />
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Right bubbles */}
+              {/* Right bubbles — desktop only */}
               <div className="hidden md:flex flex-col gap-5 ml-6 mb-8 items-start">
                 {RIGHT_LANGS.map((l, i) => (
                   <FloatingBubble key={l.label} flag={l.flag} label={l.label} delay={i} side="right" />
@@ -192,7 +206,7 @@ export default function ComingSoonPage() {
             </div>
 
             {/* Waitlist card */}
-            <div className="w-full max-w-lg bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl shadow-purple-200/30 px-6 py-5 -mt-2">
+            <div className="w-full max-w-lg bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl shadow-purple-200/30 px-4 md:px-6 py-4 md:py-5 -mt-2 mx-4">
 
               {status === 'success' ? (
                 <div className="flex flex-col items-center gap-2 py-2">
@@ -212,7 +226,8 @@ export default function ComingSoonPage() {
                 </div>
               ) : (
                 <>
-                  <form onSubmit={handleSubmit} className="flex gap-2 mb-3">
+                  {/* Mobile: stacked layout / Desktop: row layout */}
+                  <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-3">
                     <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4">
                       <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                       <input
@@ -227,7 +242,7 @@ export default function ComingSoonPage() {
                     <button
                       type="submit"
                       disabled={status === 'loading'}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
+                      className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
                     >
                       {status === 'loading' ? '...' : t.cta}
                     </button>
@@ -242,10 +257,10 @@ export default function ComingSoonPage() {
             </div>
 
             {/* Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-5">
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-8 mt-4 md:mt-5 px-4">
               {[
-                { icon: <Users className="w-4 h-4 text-slate-500" />,     label: t.badge1 },
-                { icon: <Cpu className="w-4 h-4 text-slate-500" />,       label: t.badge2 },
+                { icon: <Users className="w-4 h-4 text-slate-500" />,       label: t.badge1 },
+                { icon: <Cpu className="w-4 h-4 text-slate-500" />,         label: t.badge2 },
                 { icon: <ShieldCheck className="w-4 h-4 text-slate-500" />, label: t.badge3 },
               ].map((b) => (
                 <div key={b.label} className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
