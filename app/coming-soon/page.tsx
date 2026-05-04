@@ -1,236 +1,74 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { MessageCircle, Send, Check, Loader2 } from 'lucide-react';
+import { Mail, ShieldCheck, Cpu, Users } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useUILanguage } from '@/contexts/UILanguageContext';
 
+// ── Translations ──────────────────────────────────────────────────────────────
 const T: Record<string, {
-  headline: string;
-  sub: string;
-  placeholder: string;
-  cta: string;
-  success: string;
-  successSub: string;
-  duplicate: string;
-  duplicateSub: string;
-  error: string;
-  legal: string;
+  coming: string; sub1: string; sub2: string;
+  placeholder: string; cta: string; privacy: string;
+  badge1: string; badge2: string; badge3: string;
+  success: string; successSub: string;
+  duplicate: string; duplicateSub: string; error: string;
 }> = {
-  en: {
-    headline: "We're launching soon.",
-    sub: "AI tutors that speak with you, correct you, and help you truly master a new language. Be the first to know.",
-    placeholder: "your@email.com",
-    cta: "Join the waitlist",
-    success: "You're on the list!",
-    successSub: "We'll notify you as soon as we open.",
-    duplicate: "Already signed up!",
-    duplicateSub: "Your email is already on the waitlist.",
-    error: "Something went wrong. Try again.",
-    legal: "No spam. One email when we're ready.",
-  },
-  it: {
-    headline: "Stiamo arrivando.",
-    sub: "Tutor AI che parlano con te, ti correggono e ti aiutano a padroneggiare davvero una nuova lingua. Sii il primo a saperlo.",
-    placeholder: "la-tua@email.com",
-    cta: "Unisciti alla lista d'attesa",
-    success: "Sei nella lista!",
-    successSub: "Ti avviseremo non appena apriamo.",
-    duplicate: "Sei già iscritto!",
-    duplicateSub: "Questa email è già nella lista d'attesa.",
-    error: "Qualcosa è andato storto. Riprova.",
-    legal: "Niente spam. Solo un'email quando siamo pronti.",
-  },
-  es: {
-    headline: "Llegamos pronto.",
-    sub: "Tutores de IA que hablan contigo, te corrigen y te ayudan a dominar realmente un nuevo idioma. Sé el primero en saberlo.",
-    placeholder: "tu@email.com",
-    cta: "Únete a la lista de espera",
-    success: "¡Estás en la lista!",
-    successSub: "Te avisaremos en cuanto abramos.",
-    duplicate: "¡Ya estás registrado!",
-    duplicateSub: "Este email ya está en la lista de espera.",
-    error: "Algo salió mal. Inténtalo de nuevo.",
-    legal: "Sin spam. Solo un email cuando estemos listos.",
-  },
-  fr: {
-    headline: "On arrive bientôt.",
-    sub: "Des tuteurs IA qui parlent avec toi, te corrigent et t'aident à maîtriser vraiment une nouvelle langue. Sois le premier informé.",
-    placeholder: "ton@email.com",
-    cta: "Rejoindre la liste d'attente",
-    success: "Tu es sur la liste !",
-    successSub: "On te préviendra dès qu'on ouvre.",
-    duplicate: "Déjà inscrit !",
-    duplicateSub: "Cet email est déjà sur la liste.",
-    error: "Quelque chose s'est mal passé. Réessaie.",
-    legal: "Pas de spam. Un seul email quand on est prêt.",
-  },
-  de: {
-    headline: "Wir kommen bald.",
-    sub: "KI-Tutoren, die mit dir sprechen, dich korrigieren und dir helfen, eine neue Sprache wirklich zu meistern. Sei der Erste, der es erfährt.",
-    placeholder: "deine@email.com",
-    cta: "Warteliste beitreten",
-    success: "Du bist auf der Liste!",
-    successSub: "Wir benachrichtigen dich, sobald wir öffnen.",
-    duplicate: "Bereits angemeldet!",
-    duplicateSub: "Diese E-Mail ist bereits auf der Warteliste.",
-    error: "Etwas ist schiefgelaufen. Versuch es nochmal.",
-    legal: "Kein Spam. Nur eine E-Mail wenn wir bereit sind.",
-  },
-  pt: {
-    headline: "Chegamos em breve.",
-    sub: "Tutores de IA que falam com você, te corrigem e te ajudam a dominar de verdade um novo idioma. Seja o primeiro a saber.",
-    placeholder: "seu@email.com",
-    cta: "Entrar na lista de espera",
-    success: "Você está na lista!",
-    successSub: "Avisaremos assim que abrirmos.",
-    duplicate: "Já inscrito!",
-    duplicateSub: "Este email já está na lista de espera.",
-    error: "Algo deu errado. Tente novamente.",
-    legal: "Sem spam. Só um email quando estivermos prontos.",
-  },
-  ja: {
-    headline: "もうすぐリリース。",
-    sub: "あなたと話し、修正し、新しい言語を本当に習得できるようサポートするAIチューター。最初に知らせを受け取ろう。",
-    placeholder: "your@email.com",
-    cta: "ウェイティングリストに参加",
-    success: "リストに登録されました！",
-    successSub: "オープン時にお知らせします。",
-    duplicate: "既に登録済みです！",
-    duplicateSub: "このメールアドレスは既にリストにあります。",
-    error: "エラーが発生しました。もう一度お試しください。",
-    legal: "スパムなし。準備ができたら一度だけメールします。",
-  },
-  zh: {
-    headline: "即将上线。",
-    sub: "与你对话、纠正你、帮你真正掌握一门新语言的AI家教。抢先获得通知。",
-    placeholder: "your@email.com",
-    cta: "加入候补名单",
-    success: "您已加入名单！",
-    successSub: "我们开放时会立即通知您。",
-    duplicate: "已经注册！",
-    duplicateSub: "此邮箱已在候补名单中。",
-    error: "出了点问题，请重试。",
-    legal: "无垃圾邮件。准备好后发送一封邮件。",
-  },
-  ko: {
-    headline: "곧 출시됩니다.",
-    sub: "함께 대화하고, 교정해주고, 새로운 언어를 진짜로 마스터할 수 있도록 도와주는 AI 튜터. 가장 먼저 알아보세요.",
-    placeholder: "your@email.com",
-    cta: "대기자 명단 참여",
-    success: "명단에 등록되었습니다!",
-    successSub: "오픈하면 바로 알려드리겠습니다.",
-    duplicate: "이미 등록되었습니다!",
-    duplicateSub: "이 이메일은 이미 대기자 명단에 있습니다.",
-    error: "문제가 발생했습니다. 다시 시도해주세요.",
-    legal: "스팸 없음. 준비되면 이메일 한 통만 드립니다.",
-  },
-  ru: {
-    headline: "Скоро открываемся.",
-    sub: "ИИ-репетиторы, которые разговаривают с тобой, исправляют тебя и помогают по-настоящему освоить новый язык. Узнай первым.",
-    placeholder: "your@email.com",
-    cta: "Войти в список ожидания",
-    success: "Ты в списке!",
-    successSub: "Уведомим, как только откроемся.",
-    duplicate: "Уже зарегистрирован!",
-    duplicateSub: "Этот email уже в списке ожидания.",
-    error: "Что-то пошло не так. Попробуй снова.",
-    legal: "Никакого спама. Одно письмо, когда будем готовы.",
-  },
-  ar: {
-    headline: "نطلق قريباً.",
-    sub: "مدرسون بالذكاء الاصطناعي يتحدثون معك ويصححون أخطاءك ويساعدونك على إتقان لغة جديدة حقاً. كن أول من يعلم.",
-    placeholder: "بريدك@email.com",
-    cta: "انضم إلى قائمة الانتظار",
-    success: "أنت في القائمة!",
-    successSub: "سنخبرك فور الافتتاح.",
-    duplicate: "مسجل بالفعل!",
-    duplicateSub: "هذا البريد موجود بالفعل في القائمة.",
-    error: "حدث خطأ ما. حاول مرة أخرى.",
-    legal: "لا بريد مزعج. رسالة واحدة فقط عند الاستعداد.",
-  },
-  hi: {
-    headline: "जल्द आ रहे हैं।",
-    sub: "AI ट्यूटर जो आपसे बात करते हैं, सुधार करते हैं और एक नई भाषा सच में सीखने में मदद करते हैं। सबसे पहले जानें।",
-    placeholder: "your@email.com",
-    cta: "प्रतीक्षा सूची में शामिल हों",
-    success: "आप सूची में हैं!",
-    successSub: "खुलने पर हम आपको सूचित करेंगे।",
-    duplicate: "पहले से पंजीकृत!",
-    duplicateSub: "यह ईमेल पहले से सूची में है।",
-    error: "कुछ गलत हुआ। फिर कोशिश करें।",
-    legal: "कोई स्पैम नहीं। तैयार होने पर एक ईमेल।",
-  },
-  tr: {
-    headline: "Yakında geliyoruz.",
-    sub: "Seninle konuşan, seni düzelten ve yeni bir dili gerçekten öğrenmene yardımcı olan AI öğretmenler. İlk sen öğren.",
-    placeholder: "senin@email.com",
-    cta: "Bekleme listesine katıl",
-    success: "Listedesin!",
-    successSub: "Açıldığımızda seni bilgilendireceğiz.",
-    duplicate: "Zaten kayıtlısın!",
-    duplicateSub: "Bu e-posta zaten bekleme listesinde.",
-    error: "Bir şeyler yanlış gitti. Tekrar dene.",
-    legal: "Spam yok. Hazır olduğumuzda tek bir e-posta.",
-  },
-  nl: {
-    headline: "We komen eraan.",
-    sub: "AI-tutors die met je praten, je corrigeren en je helpen een nieuwe taal echt te beheersen. Wees de eerste die het weet.",
-    placeholder: "jouw@email.com",
-    cta: "Aanmelden voor de wachtlijst",
-    success: "Je staat op de lijst!",
-    successSub: "We laten je weten zodra we openen.",
-    duplicate: "Al aangemeld!",
-    duplicateSub: "Dit e-mailadres staat al op de wachtlijst.",
-    error: "Er ging iets mis. Probeer het opnieuw.",
-    legal: "Geen spam. Één e-mail als we klaar zijn.",
-  },
-  pl: {
-    headline: "Już wkrótce.",
-    sub: "Tutorzy AI, którzy rozmawiają z tobą, poprawiają cię i pomagają naprawdę opanować nowy język. Dowiedz się jako pierwszy.",
-    placeholder: "twoj@email.com",
-    cta: "Dołącz do listy oczekujących",
-    success: "Jesteś na liście!",
-    successSub: "Powiadomimy cię, gdy się otworzymy.",
-    duplicate: "Już zapisany!",
-    duplicateSub: "Ten email jest już na liście oczekujących.",
-    error: "Coś poszło nie tak. Spróbuj ponownie.",
-    legal: "Żadnego spamu. Jeden email gdy będziemy gotowi.",
-  },
+  en: { coming: 'COMING SOON', sub1: 'The future of learning is personalized.', sub2: 'AI tutors that understand you. Teach you. Elevate you.', placeholder: 'Enter your email address', cta: 'NOTIFY ME', privacy: 'We respect your privacy. No spam, ever.', badge1: 'Personalized Learning', badge2: 'Adaptive AI Technology', badge3: 'Trusted & Secure', success: "You're on the list!", successSub: "We'll notify you as soon as we open.", duplicate: 'Already signed up!', duplicateSub: 'Your email is already on the waitlist.', error: 'Something went wrong. Try again.' },
+  it: { coming: 'COMING SOON', sub1: 'Il futuro dell\'apprendimento è personalizzato.', sub2: 'Tutor AI che ti capiscono. Ti insegnano. Ti elevano.', placeholder: 'Inserisci la tua email', cta: 'AVVISAMI', privacy: 'Rispettiamo la tua privacy. Niente spam.', badge1: 'Apprendimento Personalizzato', badge2: 'Tecnologia AI Adattiva', badge3: 'Sicuro & Affidabile', success: 'Sei nella lista!', successSub: 'Ti avviseremo non appena apriamo.', duplicate: 'Già iscritto!', duplicateSub: 'Questa email è già nella lista.', error: 'Qualcosa è andato storto. Riprova.' },
+  es: { coming: 'PRÓXIMAMENTE', sub1: 'El futuro del aprendizaje es personalizado.', sub2: 'Tutores de IA que te entienden. Te enseñan. Te elevan.', placeholder: 'Ingresa tu email', cta: 'NOTIFÍCAME', privacy: 'Respetamos tu privacidad. Sin spam.', badge1: 'Aprendizaje Personalizado', badge2: 'Tecnología IA Adaptiva', badge3: 'Confiable y Seguro', success: '¡Estás en la lista!', successSub: 'Te avisaremos en cuanto abramos.', duplicate: '¡Ya registrado!', duplicateSub: 'Este email ya está en la lista.', error: 'Algo salió mal. Inténtalo de nuevo.' },
+  fr: { coming: 'BIENTÔT', sub1: 'L\'avenir de l\'apprentissage est personnalisé.', sub2: 'Des tuteurs IA qui te comprennent. T\'enseignent. T\'élèvent.', placeholder: 'Entre ton adresse email', cta: 'ME NOTIFIER', privacy: 'Nous respectons ta vie privée. Zéro spam.', badge1: 'Apprentissage Personnalisé', badge2: 'Technologie IA Adaptative', badge3: 'Sécurisé & Fiable', success: 'Tu es sur la liste !', successSub: 'On te préviendra dès qu\'on ouvre.', duplicate: 'Déjà inscrit !', duplicateSub: 'Cet email est déjà sur la liste.', error: 'Une erreur est survenue. Réessaie.' },
+  de: { coming: 'DEMNÄCHST', sub1: 'Die Zukunft des Lernens ist personalisiert.', sub2: 'KI-Tutoren, die dich verstehen. Dich lehren. Dich voranbringen.', placeholder: 'Deine E-Mail-Adresse', cta: 'BENACHRICHTIGE MICH', privacy: 'Wir respektieren deine Privatsphäre. Kein Spam.', badge1: 'Personalisiertes Lernen', badge2: 'Adaptive KI-Technologie', badge3: 'Vertrauenswürdig & Sicher', success: 'Du bist auf der Liste!', successSub: 'Wir benachrichtigen dich bei der Eröffnung.', duplicate: 'Bereits angemeldet!', duplicateSub: 'Diese E-Mail ist bereits auf der Liste.', error: 'Etwas ist schiefgelaufen. Versuch es nochmal.' },
+  pt: { coming: 'EM BREVE', sub1: 'O futuro do aprendizado é personalizado.', sub2: 'Tutores de IA que te entendem. Te ensinam. Te elevam.', placeholder: 'Digite seu email', cta: 'ME AVISE', privacy: 'Respeitamos sua privacidade. Sem spam.', badge1: 'Aprendizado Personalizado', badge2: 'Tecnologia IA Adaptativa', badge3: 'Confiável e Seguro', success: 'Você está na lista!', successSub: 'Avisaremos assim que abrirmos.', duplicate: 'Já cadastrado!', duplicateSub: 'Este email já está na lista.', error: 'Algo deu errado. Tente novamente.' },
+  ja: { coming: 'もうすぐ公開', sub1: '学びの未来はパーソナライズされている。', sub2: 'あなたを理解し、教え、高めるAIチューター。', placeholder: 'メールアドレスを入力', cta: '通知を受け取る', privacy: 'プライバシーを尊重します。スパムなし。', badge1: 'パーソナライズ学習', badge2: '適応型AI技術', badge3: '安全・安心', success: 'リストに登録されました！', successSub: 'オープン時にお知らせします。', duplicate: '既に登録済みです！', duplicateSub: 'このメールは既にリストにあります。', error: 'エラーが発生しました。再試行してください。' },
+  zh: { coming: '即将推出', sub1: '学习的未来是个性化的。', sub2: '理解你、教导你、提升你的AI导师。', placeholder: '输入您的邮箱地址', cta: '通知我', privacy: '我们尊重您的隐私，绝不发送垃圾邮件。', badge1: '个性化学习', badge2: '自适应AI技术', badge3: '安全可信', success: '您已加入名单！', successSub: '开放时我们会立即通知您。', duplicate: '已经注册！', duplicateSub: '此邮箱已在名单中。', error: '出了点问题，请重试。' },
+  ko: { coming: '곧 출시', sub1: '학습의 미래는 개인화입니다.', sub2: '당신을 이해하고, 가르치고, 성장시키는 AI 튜터.', placeholder: '이메일 주소 입력', cta: '알림 받기', privacy: '개인정보를 존중합니다. 스팸 없음.', badge1: '개인화 학습', badge2: '적응형 AI 기술', badge3: '신뢰 & 보안', success: '명단에 등록되었습니다!', successSub: '오픈하면 바로 알려드리겠습니다.', duplicate: '이미 등록되었습니다!', duplicateSub: '이 이메일은 이미 명단에 있습니다.', error: '문제가 발생했습니다. 다시 시도해주세요.' },
+  ru: { coming: 'СКОРО', sub1: 'Будущее обучения — персонализация.', sub2: 'ИИ-репетиторы, которые понимают, учат и развивают тебя.', placeholder: 'Введи свой email', cta: 'УВЕДОМИТЬ', privacy: 'Мы уважаем твою конфиденциальность. Никакого спама.', badge1: 'Персонализированное обучение', badge2: 'Адаптивные технологии ИИ', badge3: 'Надёжно и безопасно', success: 'Ты в списке!', successSub: 'Уведомим, как только откроемся.', duplicate: 'Уже зарегистрирован!', duplicateSub: 'Этот email уже в списке.', error: 'Что-то пошло не так. Попробуй снова.' },
+  ar: { coming: 'قريباً', sub1: 'مستقبل التعلم هو التخصيص.', sub2: 'مدرسون بالذكاء الاصطناعي يفهمونك ويعلمونك ويرفعونك.', placeholder: 'أدخل بريدك الإلكتروني', cta: 'أخبرني', privacy: 'نحترم خصوصيتك. لا بريد مزعج أبداً.', badge1: 'تعلم شخصي', badge2: 'تقنية ذكاء اصطناعي تكيفية', badge3: 'موثوق وآمن', success: 'أنت في القائمة!', successSub: 'سنخبرك فور الافتتاح.', duplicate: 'مسجل بالفعل!', duplicateSub: 'هذا البريد موجود بالفعل في القائمة.', error: 'حدث خطأ ما. حاول مرة أخرى.' },
+  hi: { coming: 'जल्द आ रहा है', sub1: 'सीखने का भविष्य व्यक्तिगत है।', sub2: 'AI ट्यूटर जो आपको समझते, सिखाते और आगे बढ़ाते हैं।', placeholder: 'अपना ईमेल दर्ज करें', cta: 'सूचित करें', privacy: 'हम आपकी गोपनीयता का सम्मान करते हैं। कोई स्पैम नहीं।', badge1: 'व्यक्तिगत शिक्षा', badge2: 'अनुकूली AI तकनीक', badge3: 'विश्वसनीय और सुरक्षित', success: 'आप सूची में हैं!', successSub: 'खुलने पर हम आपको सूचित करेंगे।', duplicate: 'पहले से पंजीकृत!', duplicateSub: 'यह ईमेल पहले से सूची में है।', error: 'कुछ गलत हुआ। फिर कोशिश करें।' },
+  tr: { coming: 'YAKINDA', sub1: 'Öğrenmenin geleceği kişiselleştirilmiş.', sub2: 'Seni anlayan, öğreten ve yükselten AI öğretmenler.', placeholder: 'E-posta adresinizi girin', cta: 'BİLDİR', privacy: 'Gizliliğinize saygı duyuyoruz. Spam yok.', badge1: 'Kişiselleştirilmiş Öğrenme', badge2: 'Uyarlanabilir AI Teknolojisi', badge3: 'Güvenilir ve Güvenli', success: 'Listedesin!', successSub: 'Açıldığımızda seni bilgilendireceğiz.', duplicate: 'Zaten kayıtlısın!', duplicateSub: 'Bu e-posta zaten listede.', error: 'Bir şeyler yanlış gitti. Tekrar dene.' },
+  nl: { coming: 'BINNENKORT', sub1: 'De toekomst van leren is gepersonaliseerd.', sub2: 'AI-tutors die jou begrijpen. Leren. Verheffen.', placeholder: 'Voer je e-mailadres in', cta: 'MELD MIJ AAN', privacy: 'We respecteren je privacy. Geen spam.', badge1: 'Gepersonaliseerd Leren', badge2: 'Adaptieve AI-technologie', badge3: 'Vertrouwd & Veilig', success: 'Je staat op de lijst!', successSub: 'We laten je weten zodra we openen.', duplicate: 'Al aangemeld!', duplicateSub: 'Dit e-mailadres staat al op de lijst.', error: 'Er ging iets mis. Probeer het opnieuw.' },
+  pl: { coming: 'WKRÓTCE', sub1: 'Przyszłość nauki jest spersonalizowana.', sub2: 'Tutorzy AI, którzy cię rozumieją. Uczą. Rozwijają.', placeholder: 'Wpisz swój adres email', cta: 'POWIADOM MNIE', privacy: 'Szanujemy Twoją prywatność. Żadnego spamu.', badge1: 'Spersonalizowana Nauka', badge2: 'Adaptacyjna Technologia AI', badge3: 'Zaufany i Bezpieczny', success: 'Jesteś na liście!', successSub: 'Powiadomimy cię, gdy się otworzymy.', duplicate: 'Już zapisany!', duplicateSub: 'Ten email jest już na liście.', error: 'Coś poszło nie tak. Spróbuj ponownie.' },
 };
 
-const TUTORS = [
-  { id: 't1', src: '/tutors/Tutor-2.png', name: 'Sofia' },
-  { id: 't2', src: '/tutors/Tutor-4.png', name: 'Amara' },
-  { id: 't5', src: '/tutors/Tutor-1.png', name: 'James' },
-  { id: 't3', src: '/tutors/Tutor-6.png', name: 'Yuki' },
-  { id: 't6', src: '/tutors/Tutor-3.png', name: 'Marcus' },
+// ── Floating language bubbles ─────────────────────────────────────────────────
+const LEFT_LANGS  = [
+  { flag: '🇺🇸', label: 'English'    },
+  { flag: '🇪🇸', label: 'Spanish'    },
+  { flag: '🇫🇷', label: 'French'     },
+  { flag: '🇮🇹', label: 'Italian'    },
+  { flag: '🇩🇪', label: 'German'     },
+];
+const RIGHT_LANGS = [
+  { flag: '🇧🇷', label: 'Portuguese' },
+  { flag: '🇸🇦', label: 'Arabic'     },
+  { flag: '🇯🇵', label: 'Japanese'   },
+  { flag: '🇰🇷', label: 'Korean'     },
+  { flag: '🇨🇳', label: 'Chinese'    },
 ];
 
-function TutorCard({ src, name, delay }: { src: string; name: string; delay: number }) {
-  const [waving, setWaving] = useState(false);
+const TUTORS = [
+  { src: '/tutors/Tutor-3.png', z: 10,  scale: 0.82 },
+  { src: '/tutors/Tutor-1.png', z: 20,  scale: 0.90 },
+  { src: '/tutors/Tutor-5.png', z: 30,  scale: 1.00 },
+  { src: '/tutors/Tutor-2.png', z: 20,  scale: 0.90 },
+  { src: '/tutors/Tutor-4.png', z: 10,  scale: 0.82 },
+];
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const iv = setInterval(() => {
-        setWaving(true);
-        setTimeout(() => setWaving(false), 1200);
-      }, 4000 + delay * 500);
-      return () => clearInterval(iv);
-    }, delay * 600);
-    return () => clearTimeout(t);
-  }, [delay]);
-
+function FloatingBubble({ flag, label, delay, side }: { flag: string; label: string; delay: number; side: 'left' | 'right' }) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className={`relative w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/40 shadow-xl transition-transform duration-300 ${waving ? 'scale-110' : 'scale-100'}`}>
-        <Image src={src} alt={name} fill className="object-cover object-top" />
+    <div
+      className="flex flex-col items-center gap-1.5 select-none"
+      style={{
+        animation: `float-${side} ${5 + delay * 0.7}s ease-in-out infinite`,
+        animationDelay: `${delay * 0.4}s`,
+      }}
+    >
+      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-lg shadow-purple-200/40 flex items-center justify-center text-3xl md:text-4xl">
+        {flag}
       </div>
-      <div className={`absolute -top-1 -right-1 text-base transition-all duration-300 ${waving ? 'opacity-100 rotate-12' : 'opacity-0 rotate-0'}`}>👋</div>
-      <span className="text-[11px] font-medium text-white/60">{name}</span>
+      <span className="text-[11px] font-medium text-slate-500">{label}</span>
     </div>
   );
 }
@@ -238,8 +76,9 @@ function TutorCard({ src, name, delay }: { src: string; name: string; delay: num
 export default function ComingSoonPage() {
   const { uiLang, mounted } = useUILanguage();
   const t = T[mounted ? uiLang : 'en'] ?? T['en'];
+  const isRTL = uiLang === 'ar';
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail]   = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -248,8 +87,8 @@ export default function ComingSoonPage() {
     setStatus('loading');
     try {
       const q = query(collection(db, 'waitlist'), where('email', '==', email.toLowerCase().trim()));
-      const existing = await getDocs(q);
-      if (!existing.empty) { setStatus('duplicate'); return; }
+      const snap = await getDocs(q);
+      if (!snap.empty) { setStatus('duplicate'); return; }
       await addDoc(collection(db, 'waitlist'), {
         email: email.toLowerCase().trim(),
         createdAt: serverTimestamp(),
@@ -261,104 +100,166 @@ export default function ComingSoonPage() {
     }
   }
 
-  const isRTL = uiLang === 'ar';
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]" dir={isRTL ? 'rtl' : 'ltr'}>
+    <>
+      {/* Float keyframes injected once */}
+      <style>{`
+        @keyframes float-left  { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
+        @keyframes float-right { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)}  }
+        @keyframes breathe     { 0%,100%{transform:scaleY(1)}       50%{transform:scaleY(1.012)}     }
+      `}</style>
 
-      {/* Video background */}
-      <video
-        autoPlay muted loop playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-90"
-        src="/coming-soon-banner.mp4"
-      />
+      <div className="relative min-h-screen overflow-hidden bg-[#f0f0ff]" dir={isRTL ? 'rtl' : 'ltr'}>
 
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70" />
+        {/* ── Video background ── */}
+        <video
+          autoPlay muted loop playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/coming-soon-banner.mp4"
+        />
+        {/* very subtle light overlay so text stays readable */}
+        <div className="absolute inset-0 bg-white/10" />
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-between px-4 py-10">
+        {/* ── Page layout ── */}
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-between px-4 py-8 md:py-10">
 
-        {/* Top — Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/40">
-            <MessageCircle className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-extrabold text-white tracking-tight">ChatLingo</span>
-        </div>
-
-        {/* Center — Main content */}
-        <div className="flex flex-col items-center text-center max-w-xl w-full gap-8">
-
-          {/* Tutors */}
-          <div className="flex items-end gap-5 md:gap-7">
-            {TUTORS.map((tutor, i) => (
-              <div key={tutor.id} className="relative" style={{ transform: `translateY(${i % 2 === 0 ? '0px' : '-6px'})` }}>
-                <TutorCard src={tutor.src} name={tutor.name} delay={i} />
-              </div>
-            ))}
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-400/40">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </div>
+            <span className="text-xl font-extrabold text-slate-800 tracking-tight">ChatLingo</span>
           </div>
 
-          {/* Headline */}
-          <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
-              {t.headline}
+          {/* Main content */}
+          <div className="flex flex-col items-center text-center w-full max-w-5xl gap-0">
+
+            {/* Headline */}
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-3"
+              style={{ background: 'linear-gradient(135deg, #6c3de8 0%, #8b5cf6 50%, #a78bfa 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              {t.coming}
             </h1>
-            <p className="text-base md:text-lg text-white/60 leading-relaxed max-w-md mx-auto">
-              {t.sub}
-            </p>
+            <p className="text-slate-700 font-semibold text-base md:text-lg mb-1">{t.sub1}</p>
+            <p className="text-slate-400 text-sm md:text-base mb-6">{t.sub2}</p>
+
+            {/* Tutors + floating bubbles */}
+            <div className="relative flex items-end justify-center w-full">
+
+              {/* Left bubbles */}
+              <div className="hidden md:flex flex-col gap-5 mr-6 mb-8 items-end">
+                {LEFT_LANGS.map((l, i) => (
+                  <FloatingBubble key={l.label} flag={l.flag} label={l.label} delay={i} side="left" />
+                ))}
+              </div>
+
+              {/* Tutors row */}
+              <div className="flex items-end justify-center gap-0 md:gap-1">
+                {TUTORS.map((tutor, i) => {
+                  const isCenter = i === 2;
+                  const height = isCenter ? 320 : i === 1 || i === 3 ? 280 : 240;
+                  return (
+                    <div
+                      key={i}
+                      className="relative flex-shrink-0"
+                      style={{
+                        zIndex: tutor.z,
+                        width: height * 0.65,
+                        height: height,
+                        animation: `breathe ${3.5 + i * 0.3}s ease-in-out infinite`,
+                        animationDelay: `${i * 0.5}s`,
+                      }}
+                    >
+                      <Image
+                        src={tutor.src}
+                        alt="Tutor"
+                        fill
+                        className="object-cover object-top"
+                        style={{ borderRadius: '50% 50% 0 0' }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right bubbles */}
+              <div className="hidden md:flex flex-col gap-5 ml-6 mb-8 items-start">
+                {RIGHT_LANGS.map((l, i) => (
+                  <FloatingBubble key={l.label} flag={l.flag} label={l.label} delay={i} side="right" />
+                ))}
+              </div>
+            </div>
+
+            {/* Waitlist card */}
+            <div className="w-full max-w-lg bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl shadow-purple-200/30 px-6 py-5 -mt-2">
+
+              {status === 'success' ? (
+                <div className="flex flex-col items-center gap-2 py-2">
+                  <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <p className="font-bold text-slate-800">{t.success}</p>
+                  <p className="text-sm text-slate-500">{t.successSub}</p>
+                </div>
+              ) : status === 'duplicate' ? (
+                <div className="flex flex-col items-center gap-2 py-2">
+                  <div className="w-11 h-11 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <p className="font-bold text-slate-800">{t.duplicate}</p>
+                  <p className="text-sm text-slate-500">{t.duplicateSub}</p>
+                </div>
+              ) : (
+                <>
+                  <form onSubmit={handleSubmit} className="flex gap-2 mb-3">
+                    <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4">
+                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder={t.placeholder}
+                        className="flex-1 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={status === 'loading'}
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap"
+                    >
+                      {status === 'loading' ? '...' : t.cta}
+                    </button>
+                  </form>
+                  {status === 'error' && <p className="text-red-500 text-xs text-center mb-2">{t.error}</p>}
+                  <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>{t.privacy}</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-5">
+              {[
+                { icon: <Users className="w-4 h-4 text-slate-500" />,     label: t.badge1 },
+                { icon: <Cpu className="w-4 h-4 text-slate-500" />,       label: t.badge2 },
+                { icon: <ShieldCheck className="w-4 h-4 text-slate-500" />, label: t.badge3 },
+              ].map((b) => (
+                <div key={b.label} className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
+                  {b.icon}
+                  <span>{b.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Waitlist form */}
-          <div className="w-full max-w-sm">
-            {status === 'success' ? (
-              <div className="flex flex-col items-center gap-2 py-4">
-                <div className="w-12 h-12 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center mb-1">
-                  <Check className="w-6 h-6 text-green-400" />
-                </div>
-                <p className="text-white font-semibold text-lg">{t.success}</p>
-                <p className="text-white/50 text-sm">{t.successSub}</p>
-              </div>
-            ) : status === 'duplicate' ? (
-              <div className="flex flex-col items-center gap-2 py-4">
-                <div className="w-12 h-12 bg-indigo-500/20 border border-indigo-400/30 rounded-full flex items-center justify-center mb-1">
-                  <Check className="w-6 h-6 text-indigo-400" />
-                </div>
-                <p className="text-white font-semibold text-lg">{t.duplicate}</p>
-                <p className="text-white/50 text-sm">{t.duplicateSub}</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t.placeholder}
-                    className="flex-1 bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all backdrop-blur-sm"
-                  />
-                  <button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl font-semibold text-sm transition-colors disabled:opacity-60 flex items-center gap-2 shrink-0 shadow-lg shadow-indigo-500/30"
-                  >
-                    {status === 'loading'
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <Send className="w-4 h-4" />
-                    }
-                  </button>
-                </div>
-                {status === 'error' && <p className="text-red-400 text-xs text-center">{t.error}</p>}
-                <p className="text-white/30 text-xs text-center">{t.legal}</p>
-              </form>
-            )}
-          </div>
+          {/* Footer */}
+          <p className="text-slate-400 text-xs">© 2026 ChatLingo. All rights reserved.</p>
         </div>
-
-        {/* Bottom — copyright */}
-        <p className="text-white/20 text-xs">© 2026 ChatLingo. All rights reserved.</p>
       </div>
-    </div>
+    </>
   );
 }
