@@ -3,10 +3,204 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { MessageCircle, Send, Check, Loader2, ChevronRight } from 'lucide-react';
+import { MessageCircle, Send, Check, Loader2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUILanguage } from '@/contexts/UILanguageContext';
+
+const T: Record<string, {
+  headline: string;
+  sub: string;
+  placeholder: string;
+  cta: string;
+  success: string;
+  successSub: string;
+  duplicate: string;
+  duplicateSub: string;
+  error: string;
+  legal: string;
+}> = {
+  en: {
+    headline: "We're launching soon.",
+    sub: "AI tutors that speak with you, correct you, and help you truly master a new language. Be the first to know.",
+    placeholder: "your@email.com",
+    cta: "Join the waitlist",
+    success: "You're on the list!",
+    successSub: "We'll notify you as soon as we open.",
+    duplicate: "Already signed up!",
+    duplicateSub: "Your email is already on the waitlist.",
+    error: "Something went wrong. Try again.",
+    legal: "No spam. One email when we're ready.",
+  },
+  it: {
+    headline: "Stiamo arrivando.",
+    sub: "Tutor AI che parlano con te, ti correggono e ti aiutano a padroneggiare davvero una nuova lingua. Sii il primo a saperlo.",
+    placeholder: "la-tua@email.com",
+    cta: "Unisciti alla lista d'attesa",
+    success: "Sei nella lista!",
+    successSub: "Ti avviseremo non appena apriamo.",
+    duplicate: "Sei già iscritto!",
+    duplicateSub: "Questa email è già nella lista d'attesa.",
+    error: "Qualcosa è andato storto. Riprova.",
+    legal: "Niente spam. Solo un'email quando siamo pronti.",
+  },
+  es: {
+    headline: "Llegamos pronto.",
+    sub: "Tutores de IA que hablan contigo, te corrigen y te ayudan a dominar realmente un nuevo idioma. Sé el primero en saberlo.",
+    placeholder: "tu@email.com",
+    cta: "Únete a la lista de espera",
+    success: "¡Estás en la lista!",
+    successSub: "Te avisaremos en cuanto abramos.",
+    duplicate: "¡Ya estás registrado!",
+    duplicateSub: "Este email ya está en la lista de espera.",
+    error: "Algo salió mal. Inténtalo de nuevo.",
+    legal: "Sin spam. Solo un email cuando estemos listos.",
+  },
+  fr: {
+    headline: "On arrive bientôt.",
+    sub: "Des tuteurs IA qui parlent avec toi, te corrigent et t'aident à maîtriser vraiment une nouvelle langue. Sois le premier informé.",
+    placeholder: "ton@email.com",
+    cta: "Rejoindre la liste d'attente",
+    success: "Tu es sur la liste !",
+    successSub: "On te préviendra dès qu'on ouvre.",
+    duplicate: "Déjà inscrit !",
+    duplicateSub: "Cet email est déjà sur la liste.",
+    error: "Quelque chose s'est mal passé. Réessaie.",
+    legal: "Pas de spam. Un seul email quand on est prêt.",
+  },
+  de: {
+    headline: "Wir kommen bald.",
+    sub: "KI-Tutoren, die mit dir sprechen, dich korrigieren und dir helfen, eine neue Sprache wirklich zu meistern. Sei der Erste, der es erfährt.",
+    placeholder: "deine@email.com",
+    cta: "Warteliste beitreten",
+    success: "Du bist auf der Liste!",
+    successSub: "Wir benachrichtigen dich, sobald wir öffnen.",
+    duplicate: "Bereits angemeldet!",
+    duplicateSub: "Diese E-Mail ist bereits auf der Warteliste.",
+    error: "Etwas ist schiefgelaufen. Versuch es nochmal.",
+    legal: "Kein Spam. Nur eine E-Mail wenn wir bereit sind.",
+  },
+  pt: {
+    headline: "Chegamos em breve.",
+    sub: "Tutores de IA que falam com você, te corrigem e te ajudam a dominar de verdade um novo idioma. Seja o primeiro a saber.",
+    placeholder: "seu@email.com",
+    cta: "Entrar na lista de espera",
+    success: "Você está na lista!",
+    successSub: "Avisaremos assim que abrirmos.",
+    duplicate: "Já inscrito!",
+    duplicateSub: "Este email já está na lista de espera.",
+    error: "Algo deu errado. Tente novamente.",
+    legal: "Sem spam. Só um email quando estivermos prontos.",
+  },
+  ja: {
+    headline: "もうすぐリリース。",
+    sub: "あなたと話し、修正し、新しい言語を本当に習得できるようサポートするAIチューター。最初に知らせを受け取ろう。",
+    placeholder: "your@email.com",
+    cta: "ウェイティングリストに参加",
+    success: "リストに登録されました！",
+    successSub: "オープン時にお知らせします。",
+    duplicate: "既に登録済みです！",
+    duplicateSub: "このメールアドレスは既にリストにあります。",
+    error: "エラーが発生しました。もう一度お試しください。",
+    legal: "スパムなし。準備ができたら一度だけメールします。",
+  },
+  zh: {
+    headline: "即将上线。",
+    sub: "与你对话、纠正你、帮你真正掌握一门新语言的AI家教。抢先获得通知。",
+    placeholder: "your@email.com",
+    cta: "加入候补名单",
+    success: "您已加入名单！",
+    successSub: "我们开放时会立即通知您。",
+    duplicate: "已经注册！",
+    duplicateSub: "此邮箱已在候补名单中。",
+    error: "出了点问题，请重试。",
+    legal: "无垃圾邮件。准备好后发送一封邮件。",
+  },
+  ko: {
+    headline: "곧 출시됩니다.",
+    sub: "함께 대화하고, 교정해주고, 새로운 언어를 진짜로 마스터할 수 있도록 도와주는 AI 튜터. 가장 먼저 알아보세요.",
+    placeholder: "your@email.com",
+    cta: "대기자 명단 참여",
+    success: "명단에 등록되었습니다!",
+    successSub: "오픈하면 바로 알려드리겠습니다.",
+    duplicate: "이미 등록되었습니다!",
+    duplicateSub: "이 이메일은 이미 대기자 명단에 있습니다.",
+    error: "문제가 발생했습니다. 다시 시도해주세요.",
+    legal: "스팸 없음. 준비되면 이메일 한 통만 드립니다.",
+  },
+  ru: {
+    headline: "Скоро открываемся.",
+    sub: "ИИ-репетиторы, которые разговаривают с тобой, исправляют тебя и помогают по-настоящему освоить новый язык. Узнай первым.",
+    placeholder: "your@email.com",
+    cta: "Войти в список ожидания",
+    success: "Ты в списке!",
+    successSub: "Уведомим, как только откроемся.",
+    duplicate: "Уже зарегистрирован!",
+    duplicateSub: "Этот email уже в списке ожидания.",
+    error: "Что-то пошло не так. Попробуй снова.",
+    legal: "Никакого спама. Одно письмо, когда будем готовы.",
+  },
+  ar: {
+    headline: "نطلق قريباً.",
+    sub: "مدرسون بالذكاء الاصطناعي يتحدثون معك ويصححون أخطاءك ويساعدونك على إتقان لغة جديدة حقاً. كن أول من يعلم.",
+    placeholder: "بريدك@email.com",
+    cta: "انضم إلى قائمة الانتظار",
+    success: "أنت في القائمة!",
+    successSub: "سنخبرك فور الافتتاح.",
+    duplicate: "مسجل بالفعل!",
+    duplicateSub: "هذا البريد موجود بالفعل في القائمة.",
+    error: "حدث خطأ ما. حاول مرة أخرى.",
+    legal: "لا بريد مزعج. رسالة واحدة فقط عند الاستعداد.",
+  },
+  hi: {
+    headline: "जल्द आ रहे हैं।",
+    sub: "AI ट्यूटर जो आपसे बात करते हैं, सुधार करते हैं और एक नई भाषा सच में सीखने में मदद करते हैं। सबसे पहले जानें।",
+    placeholder: "your@email.com",
+    cta: "प्रतीक्षा सूची में शामिल हों",
+    success: "आप सूची में हैं!",
+    successSub: "खुलने पर हम आपको सूचित करेंगे।",
+    duplicate: "पहले से पंजीकृत!",
+    duplicateSub: "यह ईमेल पहले से सूची में है।",
+    error: "कुछ गलत हुआ। फिर कोशिश करें।",
+    legal: "कोई स्पैम नहीं। तैयार होने पर एक ईमेल।",
+  },
+  tr: {
+    headline: "Yakında geliyoruz.",
+    sub: "Seninle konuşan, seni düzelten ve yeni bir dili gerçekten öğrenmene yardımcı olan AI öğretmenler. İlk sen öğren.",
+    placeholder: "senin@email.com",
+    cta: "Bekleme listesine katıl",
+    success: "Listedesin!",
+    successSub: "Açıldığımızda seni bilgilendireceğiz.",
+    duplicate: "Zaten kayıtlısın!",
+    duplicateSub: "Bu e-posta zaten bekleme listesinde.",
+    error: "Bir şeyler yanlış gitti. Tekrar dene.",
+    legal: "Spam yok. Hazır olduğumuzda tek bir e-posta.",
+  },
+  nl: {
+    headline: "We komen eraan.",
+    sub: "AI-tutors die met je praten, je corrigeren en je helpen een nieuwe taal echt te beheersen. Wees de eerste die het weet.",
+    placeholder: "jouw@email.com",
+    cta: "Aanmelden voor de wachtlijst",
+    success: "Je staat op de lijst!",
+    successSub: "We laten je weten zodra we openen.",
+    duplicate: "Al aangemeld!",
+    duplicateSub: "Dit e-mailadres staat al op de wachtlijst.",
+    error: "Er ging iets mis. Probeer het opnieuw.",
+    legal: "Geen spam. Één e-mail als we klaar zijn.",
+  },
+  pl: {
+    headline: "Już wkrótce.",
+    sub: "Tutorzy AI, którzy rozmawiają z tobą, poprawiają cię i pomagają naprawdę opanować nowy język. Dowiedz się jako pierwszy.",
+    placeholder: "twoj@email.com",
+    cta: "Dołącz do listy oczekujących",
+    success: "Jesteś na liście!",
+    successSub: "Powiadomimy cię, gdy się otworzymy.",
+    duplicate: "Już zapisany!",
+    duplicateSub: "Ten email jest już na liście oczekujących.",
+    error: "Coś poszło nie tak. Spróbuj ponownie.",
+    legal: "Żadnego spamu. Jeden email gdy będziemy gotowi.",
+  },
+};
 
 const TUTORS = [
   { id: 't1', src: '/tutors/Tutor-2.png', name: 'Sofia' },
@@ -17,315 +211,153 @@ const TUTORS = [
 ];
 
 function TutorCard({ src, name, delay }: { src: string; name: string; delay: number }) {
-  const [blinking, setBlinking] = useState(false);
   const [waving, setWaving] = useState(false);
 
   useEffect(() => {
-    const blinkInterval = setInterval(() => {
-      setBlinking(true);
-      setTimeout(() => setBlinking(false), 150);
-    }, 2500 + delay * 300 + Math.random() * 2000);
-
-    const waveTimeout = setTimeout(() => {
-      const waveInterval = setInterval(() => {
+    const t = setTimeout(() => {
+      const iv = setInterval(() => {
         setWaving(true);
         setTimeout(() => setWaving(false), 1200);
       }, 4000 + delay * 500);
-      return () => clearInterval(waveInterval);
+      return () => clearInterval(iv);
     }, delay * 600);
-
-    return () => { clearInterval(blinkInterval); clearTimeout(waveTimeout); };
+    return () => clearTimeout(t);
   }, [delay]);
 
   return (
-    <div className="relative flex flex-col items-center">
-      <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 blur-md opacity-40 scale-110" />
-        <div className={`relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white/30 shadow-xl transition-transform duration-300 ${waving ? 'scale-110' : 'scale-100'}`}>
-          <Image src={src} alt={name} fill className="object-cover object-top" />
-          {blinking && (
-            <div className="absolute inset-0 flex flex-col justify-[33%] items-center pointer-events-none">
-              <div className="flex gap-[28%] mt-[30%]">
-                <div className="w-[18%] h-[4%] bg-[#c8a882] rounded-full" style={{ aspectRatio: '2/1' }} />
-                <div className="w-[18%] h-[4%] bg-[#c8a882] rounded-full" style={{ aspectRatio: '2/1' }} />
-              </div>
-            </div>
-          )}
-        </div>
-        <div className={`absolute -top-1 -right-1 text-lg transition-all duration-300 ${waving ? 'opacity-100 translate-y-0 rotate-12' : 'opacity-0 translate-y-2 rotate-0'}`}>
-          👋
-        </div>
+    <div className="flex flex-col items-center gap-1.5">
+      <div className={`relative w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/40 shadow-xl transition-transform duration-300 ${waving ? 'scale-110' : 'scale-100'}`}>
+        <Image src={src} alt={name} fill className="object-cover object-top" />
       </div>
-      <span className="mt-2 text-xs font-medium text-white/70">{name}</span>
+      <div className={`absolute -top-1 -right-1 text-base transition-all duration-300 ${waving ? 'opacity-100 rotate-12' : 'opacity-0 rotate-0'}`}>👋</div>
+      <span className="text-[11px] font-medium text-white/60">{name}</span>
     </div>
   );
 }
 
-type Mode = 'waitlist' | 'login' | 'signup';
-
 export default function ComingSoonPage() {
-  const { signIn, signInWithGoogle, signUp } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const showWelcome = searchParams.get('welcome') === '1';
+  const { uiLang, mounted } = useUILanguage();
+  const t = T[mounted ? uiLang : 'en'] ?? T['en'];
 
-  const [mode, setMode] = useState<Mode>('waitlist');
-  const [isDark, setIsDark] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Waitlist state
   const [email, setEmail] = useState('');
-  const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
 
-  // Auth state
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authName, setAuthName] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState('');
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => setIsDark((d) => !d), 8000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.src = isDark ? '/bg-dark.mp4' : '/bg-light.mp4';
-      videoRef.current.play().catch(() => {});
-    }
-  }, [isDark]);
-
-  async function handleWaitlist(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
-    setWaitlistStatus('loading');
+    setStatus('loading');
     try {
       const q = query(collection(db, 'waitlist'), where('email', '==', email.toLowerCase().trim()));
       const existing = await getDocs(q);
-      if (!existing.empty) { setWaitlistStatus('duplicate'); return; }
+      if (!existing.empty) { setStatus('duplicate'); return; }
       await addDoc(collection(db, 'waitlist'), {
         email: email.toLowerCase().trim(),
         createdAt: serverTimestamp(),
         source: 'coming-soon',
       });
-      setWaitlistStatus('success');
+      setStatus('success');
     } catch {
-      setWaitlistStatus('error');
+      setStatus('error');
     }
   }
 
-  async function handleGoogle() {
-    setGoogleLoading(true);
-    setAuthError('');
-    try {
-      await signInWithGoogle();
-      router.push('/coming-soon?welcome=1');
-    } catch (err: unknown) {
-      console.error('[coming-soon-google]', err);
-      setAuthError('Google sign-in failed. Try again.');
-    } finally {
-      setGoogleLoading(false);
-    }
-  }
-
-  async function handleAuth(e: React.FormEvent) {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthError('');
-    try {
-      if (mode === 'login') {
-        await signIn(authEmail, authPassword);
-        router.push('/coming-soon');
-      } else {
-        await signUp(authEmail, authPassword, authName);
-        // Add to waitlist automatically
-        const q = query(collection(db, 'waitlist'), where('email', '==', authEmail.toLowerCase().trim()));
-        const existing = await getDocs(q);
-        if (existing.empty) {
-          await addDoc(collection(db, 'waitlist'), {
-            email: authEmail.toLowerCase().trim(),
-            createdAt: serverTimestamp(),
-            source: 'signup',
-          });
-        }
-        setAuthError('');
-        setMode('waitlist');
-        setWaitlistStatus('success');
-      }
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? '';
-      const msg = err instanceof Error ? err.message : '';
-      console.error('[coming-soon-auth]', code, err);
-      if (msg === 'EMAIL_NOT_VERIFIED') {
-        setAuthError('Controlla la tua email per verificare l\'account.');
-      } else if (code === 'auth/email-already-in-use') {
-        setAuthError('Email già registrata. Prova ad accedere.');
-      } else if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-        setAuthError('Email o password non corretti.');
-      } else if (code === 'auth/user-not-found') {
-        setAuthError('Nessun account trovato con questa email.');
-      } else {
-        setAuthError('Qualcosa è andato storto. Riprova.');
-      }
-    } finally {
-      setAuthLoading(false);
-    }
-  }
-
-  const cardBg = isDark
-    ? 'bg-white/5 border-white/10 backdrop-blur-xl'
-    : 'bg-white/70 border-indigo-100 backdrop-blur-xl shadow-xl shadow-indigo-100';
-
-  const inputCls = isDark
-    ? 'bg-white/10 border-white/20 text-white placeholder-white/30 focus:border-indigo-400'
-    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-indigo-400';
-
-  const textPrimary = isDark ? 'text-white' : 'text-gray-900';
-  const textMuted = isDark ? 'text-white/50' : 'text-gray-400';
-  const textSub = isDark ? 'text-white/80' : 'text-gray-700';
+  const isRTL = uiLang === 'ar';
 
   return (
-    <div className={`relative min-h-screen overflow-hidden transition-colors duration-[2000ms] ${isDark ? 'bg-[#0f172a]' : 'bg-[#eef2ff]'}`}>
-      <video ref={videoRef} autoPlay muted loop playsInline src="/bg-light.mp4"
-        className="absolute inset-0 w-full h-full object-cover opacity-20" />
-      <div className={`absolute inset-0 transition-all duration-[2000ms] ${isDark ? 'bg-gradient-to-br from-[#0f172a] via-[#1e1b4b]/80 to-[#312e81]/60' : 'bg-gradient-to-br from-[#eef2ff]/90 via-[#e0e7ff]/70 to-[#c7d2fe]/50'}`} />
-      <div className={`absolute -top-32 -left-32 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-indigo-600/20' : 'bg-indigo-400/20'}`} />
-      <div className={`absolute -bottom-32 -right-32 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-violet-600/20' : 'bg-violet-400/20'}`} />
+    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]" dir={isRTL ? 'rtl' : 'ltr'}>
 
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-16">
+      {/* Video background */}
+      <video
+        autoPlay muted loop playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-90"
+        src="/coming-soon-banner.mp4"
+      />
 
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 mb-10">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <MessageCircle className="w-6 h-6 text-white" />
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70" />
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-between px-4 py-10">
+
+        {/* Top — Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/40">
+            <MessageCircle className="w-5 h-5 text-white" />
           </div>
-          <span className={`text-2xl font-extrabold tracking-tight transition-colors duration-[2000ms] ${textPrimary}`}>ChatLingo</span>
+          <span className="text-xl font-extrabold text-white tracking-tight">ChatLingo</span>
         </div>
 
-        {/* Tutors */}
-        <div className="flex items-end gap-4 md:gap-6 mb-10">
-          {TUTORS.map((tutor, i) => (
-            <div key={tutor.id} style={{ transform: `translateY(${i % 2 === 0 ? '0px' : '-8px'})` }}>
-              <TutorCard src={tutor.src} name={tutor.name} delay={i} />
-            </div>
-          ))}
-        </div>
+        {/* Center — Main content */}
+        <div className="flex flex-col items-center text-center max-w-xl w-full gap-8">
 
-        {/* Headline */}
-        <div className="text-center mb-8 max-w-lg">
-          <h1 className={`text-4xl md:text-5xl font-extrabold leading-tight mb-4 ${textPrimary}`}>
-            Stiamo arrivando.{' '}
-            <span className="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">Presto.</span>
-          </h1>
-          <p className={`text-base md:text-lg leading-relaxed ${textMuted}`}>
-            I tuoi tutor AI personali stanno facendo i bagagli. Iscriviti e sarai il primo a sapere quando apriamo.
-          </p>
-        </div>
-
-        {/* Welcome banner dopo registrazione */}
-        {showWelcome && (
-          <div className="w-full max-w-sm mb-4 bg-green-500/20 border border-green-400/40 rounded-2xl px-5 py-3 flex items-center gap-3">
-            <Check className="w-5 h-5 text-green-400 shrink-0" />
-            <p className="text-sm text-green-200 font-medium">Registrazione completata. Ti avviseremo quando l'app sarà disponibile.</p>
-          </div>
-        )}
-
-        {/* Card */}
-        <div className={`w-full max-w-sm rounded-2xl p-6 border transition-all duration-[2000ms] ${cardBg}`}>
-
-          {/* Tab switcher */}
-          <div className={`flex rounded-xl p-1 mb-5 ${isDark ? 'bg-white/10' : 'bg-gray-100'}`}>
-            {(['waitlist', 'login', 'signup'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setAuthError(''); }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${mode === m ? 'bg-indigo-600 text-white shadow' : `${textMuted} hover:opacity-80`}`}
-              >
-                {m === 'waitlist' ? 'Waitlist' : m === 'login' ? 'Accedi' : 'Registrati'}
-              </button>
+          {/* Tutors */}
+          <div className="flex items-end gap-5 md:gap-7">
+            {TUTORS.map((tutor, i) => (
+              <div key={tutor.id} className="relative" style={{ transform: `translateY(${i % 2 === 0 ? '0px' : '-6px'})` }}>
+                <TutorCard src={tutor.src} name={tutor.name} delay={i} />
+              </div>
             ))}
           </div>
 
-          {/* Waitlist tab */}
-          {mode === 'waitlist' && (
-            <>
-              {waitlistStatus === 'success' ? (
-                <div className="text-center py-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Check className="w-6 h-6 text-green-600" />
-                  </div>
-                  <p className={`font-semibold mb-1 ${textPrimary}`}>Sei nella lista!</p>
-                  <p className={`text-sm ${textMuted}`}>Ti avviseremo non appena apriamo.</p>
+          {/* Headline */}
+          <div className="space-y-3">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
+              {t.headline}
+            </h1>
+            <p className="text-base md:text-lg text-white/60 leading-relaxed max-w-md mx-auto">
+              {t.sub}
+            </p>
+          </div>
+
+          {/* Waitlist form */}
+          <div className="w-full max-w-sm">
+            {status === 'success' ? (
+              <div className="flex flex-col items-center gap-2 py-4">
+                <div className="w-12 h-12 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center mb-1">
+                  <Check className="w-6 h-6 text-green-400" />
                 </div>
-              ) : waitlistStatus === 'duplicate' ? (
-                <div className="text-center py-3">
-                  <p className={`font-semibold mb-1 ${textPrimary}`}>Sei già iscritto!</p>
-                  <p className={`text-sm ${textMuted}`}>Questa email è già nella lista d'attesa.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleWaitlist}>
-                  <p className={`text-sm font-semibold mb-3 ${textSub}`}>Entra nella lista d'attesa</p>
-                  <div className="flex gap-2">
-                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                      placeholder="la-tua@email.com"
-                      className={`flex-1 px-4 py-2.5 rounded-xl text-sm border outline-none transition-all ${inputCls}`} />
-                    <button type="submit" disabled={waitlistStatus === 'loading'}
-                      className="w-11 h-11 bg-indigo-600 hover:bg-indigo-700 rounded-xl flex items-center justify-center text-white transition-colors shrink-0 disabled:opacity-70">
-                      {waitlistStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {waitlistStatus === 'error' && <p className="text-xs text-red-400 mt-2">Qualcosa è andato storto. Riprova.</p>}
-                  <p className={`text-xs mt-3 ${textMuted}`}>Nessuno spam. Solo un'email quando siamo pronti.</p>
-                </form>
-              )}
-            </>
-          )}
-
-          {/* Login / Signup tab */}
-          {(mode === 'login' || mode === 'signup') && (
-            <form onSubmit={handleAuth} className="space-y-3">
-              {mode === 'signup' && (
-                <input type="text" required value={authName} onChange={(e) => setAuthName(e.target.value)}
-                  placeholder="Il tuo nome"
-                  className={`w-full px-4 py-2.5 rounded-xl text-sm border outline-none transition-all ${inputCls}`} />
-              )}
-              <input type="email" required value={authEmail} onChange={(e) => setAuthEmail(e.target.value)}
-                placeholder="Email"
-                className={`w-full px-4 py-2.5 rounded-xl text-sm border outline-none transition-all ${inputCls}`} />
-              <input type="password" required value={authPassword} onChange={(e) => setAuthPassword(e.target.value)}
-                placeholder="Password"
-                className={`w-full px-4 py-2.5 rounded-xl text-sm border outline-none transition-all ${inputCls}`} />
-
-              {authError && <p className="text-xs text-red-400">{authError}</p>}
-
-              <button type="submit" disabled={authLoading}
-                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-70 transition-colors">
-                {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{mode === 'login' ? 'Accedi' : 'Registrati'} <ChevronRight className="w-4 h-4" /></>}
-              </button>
-
-              <div className="flex items-center gap-2 my-1">
-                <div className={`flex-1 h-px ${isDark ? 'bg-white/10' : 'bg-gray-200'}`} />
-                <span className={`text-xs ${textMuted}`}>oppure</span>
-                <div className={`flex-1 h-px ${isDark ? 'bg-white/10' : 'bg-gray-200'}`} />
+                <p className="text-white font-semibold text-lg">{t.success}</p>
+                <p className="text-white/50 text-sm">{t.successSub}</p>
               </div>
-
-              <button type="button" onClick={handleGoogle} disabled={googleLoading}
-                className={`w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-70 ${isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'}`}>
-                {googleLoading
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                  Continua con Google</>
-                }
-              </button>
-            </form>
-          )}
+            ) : status === 'duplicate' ? (
+              <div className="flex flex-col items-center gap-2 py-4">
+                <div className="w-12 h-12 bg-indigo-500/20 border border-indigo-400/30 rounded-full flex items-center justify-center mb-1">
+                  <Check className="w-6 h-6 text-indigo-400" />
+                </div>
+                <p className="text-white font-semibold text-lg">{t.duplicate}</p>
+                <p className="text-white/50 text-sm">{t.duplicateSub}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.placeholder}
+                    className="flex-1 bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all backdrop-blur-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl font-semibold text-sm transition-colors disabled:opacity-60 flex items-center gap-2 shrink-0 shadow-lg shadow-indigo-500/30"
+                  >
+                    {status === 'loading'
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Send className="w-4 h-4" />
+                    }
+                  </button>
+                </div>
+                {status === 'error' && <p className="text-red-400 text-xs text-center">{t.error}</p>}
+                <p className="text-white/30 text-xs text-center">{t.legal}</p>
+              </form>
+            )}
+          </div>
         </div>
 
-        <p className={`mt-10 text-xs ${isDark ? 'text-white/20' : 'text-gray-300'}`}>
-          © 2026 ChatLingo. All rights reserved.
-        </p>
+        {/* Bottom — copyright */}
+        <p className="text-white/20 text-xs">© 2026 ChatLingo. All rights reserved.</p>
       </div>
     </div>
   );
