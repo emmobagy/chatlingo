@@ -336,6 +336,20 @@ export default function ComingSoonPage() {
             ))}
           </div>
 
+          {/* Promotional video section */}
+          <div className="w-full max-w-4xl mb-2 md:mb-4 px-4">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full rounded-2xl shadow-2xl shadow-purple-200/40 border border-white/60"
+              style={{ maxHeight: '280px', objectFit: 'cover' }}
+            >
+              <source src="/coming-soon-banner.mp4" type="video/mp4" />
+            </video>
+          </div>
+
           {/* Desktop: tutors + side bubbles */}
           <div className="hidden md:flex items-end justify-center w-full max-w-5xl relative flex-1">
 
