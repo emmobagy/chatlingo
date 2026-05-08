@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { Mail, ShieldCheck, Cpu, Users, Globe } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -36,27 +35,16 @@ const T: Record<string, {
 // ── Bubbles data ──────────────────────────────────────────────────────────────
 const LEFT_BUBBLES  = [
   { flag: '🇺🇸', label: 'English',  size: 72 },
-  { flag: '🇪🇸', label: 'Spanish',  size: 62 },
-  { flag: '🇫🇷', label: 'French',   size: 62 },
-  { flag: '🇮🇹', label: 'Italian',  size: 58 },
+  { flag: '🇪🇸', label: 'Spanish',  size: 64 },
+  { flag: '🇫🇷', label: 'French',   size: 60 },
+  { flag: '🇮🇹', label: 'Italian',  size: 60 },
   { flag: '🇩🇪', label: 'German',   size: 58 },
 ];
 const RIGHT_BUBBLES = [
   { flag: '🇧🇷', label: 'Portuguese', size: 72 },
-  { flag: '🇸🇦', label: 'Arabic',     size: 62 },
-  { flag: '🇯🇵', label: 'Japanese',   size: 58 },
-  { flag: '🇰🇷', label: 'Korean',     size: 58 },
-  { flag: '🇨🇳', label: 'Chinese',    size: 62 },
-];
-
-// Small decorative bubbles (no flag)
-const DECO_BUBBLES = [
-  { x: '12%', y: '28%', size: 14, color: 'rgba(167,139,250,0.5)' },
-  { x: '22%', y: '55%', size: 10, color: 'rgba(196,181,253,0.4)' },
-  { x: '8%',  y: '70%', size: 18, color: 'rgba(129,140,248,0.35)' },
-  { x: '78%', y: '32%', size: 12, color: 'rgba(167,139,250,0.4)' },
-  { x: '88%', y: '58%', size: 16, color: 'rgba(196,181,253,0.45)' },
-  { x: '82%', y: '72%', size: 10, color: 'rgba(129,140,248,0.3)' },
+  { flag: '🇸🇦', label: 'Arabic',     size: 64 },
+  { flag: '🇯🇵', label: 'Japanese',   size: 60 },
+  { flag: '🇨🇳', label: 'Chinese',    size: 60 },
 ];
 
 // ── Seeded random ─────────────────────────────────────────────────────────────
@@ -76,10 +64,9 @@ function GlassBubble({ flag, label, size, index, side }: {
     if (!el) return;
     const seed = index * 13 + (side === 'left' ? 0 : 77);
 
-    // Very slow, gentle organic drift
-    const dur    = 14000 + sr(seed + 0) * 10000;  // 14–24s
-    const rangeX = 10 + sr(seed + 1) * 18;         // 10–28px
-    const rangeY = 8  + sr(seed + 2) * 16;         // 8–24px
+    const dur    = 14000 + sr(seed + 0) * 10000;
+    const rangeX = 10 + sr(seed + 1) * 18;
+    const rangeY = 8  + sr(seed + 2) * 16;
     const phX    = sr(seed + 3) * Math.PI * 2;
     const phY    = sr(seed + 4) * Math.PI * 2;
 
@@ -99,67 +86,19 @@ function GlassBubble({ flag, label, size, index, side }: {
 
   return (
     <div ref={ref} className="flex flex-col items-center gap-1.5 will-change-transform">
-      {/* Glass sphere */}
       <div
         className="relative flex items-center justify-center rounded-full select-none"
         style={{
           width: size, height: size,
-          background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95) 0%, rgba(237,233,254,0.7) 50%, rgba(221,214,254,0.5) 100%)',
-          boxShadow: '0 4px 24px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(167,139,250,0.2)',
-          border: '1px solid rgba(255,255,255,0.8)',
+          background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.95) 0%, rgba(237,233,254,0.7) 50%, rgba(221,214,254,0.45) 100%)',
+          boxShadow: '0 8px 28px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -2px 4px rgba(167,139,250,0.25)',
+          border: '1px solid rgba(255,255,255,0.85)',
         }}
       >
-        {/* Inner shine */}
-        <div className="absolute top-[10%] left-[15%] w-[35%] h-[25%] rounded-full bg-white/60 blur-[2px]" />
+        <div className="absolute top-[10%] left-[15%] w-[35%] h-[25%] rounded-full bg-white/70 blur-[2px]" />
         <span style={{ fontSize: size * 0.58 }}>{flag}</span>
       </div>
-      <span className="text-[11px] font-medium text-slate-500">{label}</span>
-    </div>
-  );
-}
-
-// ── Blinking tutor ────────────────────────────────────────────────────────────
-function TutorImage({ src, height, delay }: { src: string; height: number; delay: number }) {
-  const [blinking, setBlinking] = useState(false);
-
-  useEffect(() => {
-    // Random blink every 3–6 seconds
-    function scheduleBlink() {
-      const next = 3000 + Math.random() * 3000 + delay * 400;
-      return setTimeout(() => {
-        setBlinking(true);
-        setTimeout(() => { setBlinking(false); scheduleBlink(); }, 130);
-      }, next);
-    }
-    const t = scheduleBlink();
-    return () => clearTimeout(t);
-  }, [delay]);
-
-  const width = Math.round(height * 0.67);
-
-  return (
-    <div
-      className="relative flex-shrink-0"
-      style={{
-        width, height,
-        // Fade bottom with CSS mask
-        WebkitMaskImage: 'linear-gradient(to bottom, black 55%, transparent 100%)',
-        maskImage: 'linear-gradient(to bottom, black 55%, transparent 100%)',
-      }}
-    >
-      <Image src={src} alt="AI Tutor" fill className="object-contain object-bottom" priority />
-      {/* Blink overlay — covers eye area */}
-      {blinking && (
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: '16%', left: '20%', right: '20%', height: '7%',
-            background: 'rgba(220,200,180,0.85)',
-            borderRadius: '50%',
-            filter: 'blur(2px)',
-          }}
-        />
-      )}
+      <span className="text-[11px] font-semibold text-slate-600 drop-shadow-sm">{label}</span>
     </div>
   );
 }
@@ -181,12 +120,10 @@ export default function ComingSoonPage() {
       .catch(() => {});
   }, []);
 
-  // Increment count optimistically on successful submit
   useEffect(() => {
     if (status === 'success') setWaitlistCount(c => (c ?? 0) + 1);
   }, [status]);
 
-  // Close language dropdown on outside click
   useEffect(() => {
     if (!langOpen) return;
     function close(e: MouseEvent) {
@@ -214,68 +151,48 @@ export default function ComingSoonPage() {
     } catch { setStatus('error'); }
   }
 
-  // Tutor heights using clamp so they scale with viewport height
-  const TUTORS = [
-    { src: '/tutors/tutor-new-1.png', h: 'clamp(130px, 21vh, 240px)' },
-    { src: '/tutors/tutor-new-2.png', h: 'clamp(150px, 24vh, 270px)' },
-    { src: '/tutors/tutor-new-3.png', h: 'clamp(170px, 28vh, 310px)' },
-    { src: '/tutors/tutor-new-4.png', h: 'clamp(150px, 24vh, 270px)' },
-    { src: '/tutors/tutor-new-5.png', h: 'clamp(130px, 21vh, 240px)' },
-  ];
-
   return (
     <>
       <style>{`
         .mesh-bg { display: none !important; }
-        @keyframes aurora1 {
-          0%,100% { transform: translate(0,0) scale(1); opacity:0.6; }
-          50%      { transform: translate(30px,20px) scale(1.1); opacity:0.75; }
-        }
-        @keyframes aurora2 {
-          0%,100% { transform: translate(0,0) scale(1); opacity:0.55; }
-          50%      { transform: translate(-20px,30px) scale(1.15); opacity:0.7; }
-        }
-        @keyframes aurora3 {
-          0%,100% { transform: translate(0,0) scale(1); opacity:0.35; }
-          50%      { transform: translate(20px,-25px) scale(1.08); opacity:0.55; }
-        }
         .no-scrollbar::-webkit-scrollbar { display:none; }
         .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
       `}</style>
 
-      {/* position:fixed takes this out of html/body flow — they have nothing to scroll */}
       <div
         className="overflow-hidden"
         style={{ position: 'fixed', inset: 0 }}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
-        {/* ── Background ── */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse at 50% 0%, #faf9ff 0%, #f0ebff 35%, #e4ddfa 70%, #d8cef5 100%)',
-        }} />
+        {/* ── Video background (full-bleed, contains tutors + animations) ── */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden="true"
+        >
+          <source src="/banners/coming-soon-tutors.mp4" type="video/mp4" />
+        </video>
 
-        {/* Aurora blobs */}
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full blur-[80px]"
-          style={{ background: 'radial-gradient(circle, rgba(251,146,60,0.6) 0%, rgba(249,115,22,0.2) 100%)', animation: 'aurora1 9s ease-in-out infinite' }} />
-        <div className="absolute -bottom-10 -right-10 w-80 h-80 rounded-full blur-[90px]"
-          style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.55) 0%, rgba(99,102,241,0.2) 100%)', animation: 'aurora2 11s ease-in-out infinite' }} />
-        <div className="absolute top-10 right-[15%] w-48 h-48 rounded-full blur-[70px]"
-          style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.35) 0%, transparent 100%)', animation: 'aurora3 13s ease-in-out infinite' }} />
+        {/* Soft tint to keep text/UI legible over the video */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 60%, rgba(244,240,255,0.55) 100%)',
+          }}
+        />
 
-        {/* Decorative small bubbles */}
-        {DECO_BUBBLES.map((b, i) => (
-          <div key={i} className="absolute rounded-full pointer-events-none hidden md:block"
-            style={{ left: b.x, top: b.y, width: b.size, height: b.size, background: b.color,
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.6)' }} />
-        ))}
+        {/* ── Foreground content ── */}
+        <div className="relative z-10 h-full w-full flex flex-col px-4">
 
-        {/* ── Content ── */}
-        <div className="relative z-10 h-full w-full flex flex-col items-center px-4">
-
-          {/* Logo + language switcher */}
-          <div className="flex items-center justify-between w-full max-w-5xl pt-4 md:pt-6 mb-3 md:mb-4 px-2">
+          {/* Top bar: logo + language switcher */}
+          <div className="flex items-center justify-between w-full max-w-6xl mx-auto pt-4 md:pt-6">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-400/30">
+              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
@@ -283,17 +200,16 @@ export default function ComingSoonPage() {
               <span className="text-xl font-extrabold text-slate-800 tracking-tight">ChatLingo</span>
             </div>
 
-            {/* Language switcher */}
             <div className="relative" data-lang-switcher>
               <button
                 onClick={() => setLangOpen(o => !o)}
-                className="flex items-center gap-1.5 text-sm font-medium text-slate-600 bg-white/70 backdrop-blur-sm border border-white/80 rounded-xl px-3 py-1.5 hover:bg-white/90 transition-all shadow-sm"
+                className="flex items-center gap-1.5 text-sm font-medium text-slate-700 bg-white/80 backdrop-blur-md border border-white/90 rounded-xl px-3 py-1.5 hover:bg-white transition-all shadow-sm"
               >
                 <span>{flag}</span>
                 <Globe className="w-3.5 h-3.5" />
               </button>
               {langOpen && (
-                <div className="absolute right-0 top-full mt-2 w-44 bg-white/90 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-44 bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl z-50 overflow-hidden">
                   <div className="max-h-64 overflow-y-auto py-1">
                     {UI_LANGUAGES.map(l => (
                       <button
@@ -312,148 +228,146 @@ export default function ComingSoonPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="font-black tracking-tight leading-none text-center mb-1.5 px-4"
-            style={{
-              fontSize: 'clamp(2rem, 7vw, 4.8rem)',
-              background: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 45%, #8b5cf6 75%, #a78bfa 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>
-            {t.coming}
-          </h1>
-          <p className="text-slate-700 font-semibold text-sm md:text-lg text-center mb-0.5 max-w-md">{t.sub1}</p>
-          <p className="text-slate-400 text-xs md:text-sm text-center max-w-sm md:max-w-md mb-2 md:mb-3">{t.sub2}</p>
+          <div className="w-full max-w-5xl mx-auto text-center mt-3 md:mt-4">
+            <h1
+              className="font-black tracking-tight leading-none mb-2"
+              style={{
+                fontSize: 'clamp(2.2rem, 8vw, 5.5rem)',
+                background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
+              }}
+            >
+              {t.coming}
+            </h1>
+            <p className="text-slate-800 font-bold text-sm md:text-base mb-0.5">{t.sub1}</p>
+            <p className="text-slate-500 text-xs md:text-sm">{t.sub2}</p>
+          </div>
 
-          {/* Mobile bubbles */}
-          <div className="flex md:hidden gap-3 overflow-x-auto pb-1 mb-2 px-2 w-full no-scrollbar justify-start">
+          {/* Mobile bubbles row */}
+          <div className="flex md:hidden gap-3 overflow-x-auto pb-1 mt-3 px-2 w-full no-scrollbar">
             {[...LEFT_BUBBLES, ...RIGHT_BUBBLES].map((b) => (
               <div key={b.label} className="flex flex-col items-center gap-1 flex-shrink-0">
-                <div className="w-11 h-11 rounded-full flex items-center justify-center text-2xl"
-                  style={{ background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(237,233,254,0.7))', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 2px 8px rgba(139,92,246,0.15)' }}>
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-2xl"
+                  style={{
+                    background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.95), rgba(237,233,254,0.7))',
+                    border: '1px solid rgba(255,255,255,0.85)',
+                    boxShadow: '0 4px 12px rgba(139,92,246,0.2)',
+                  }}
+                >
                   {b.flag}
                 </div>
-                <span className="text-[9px] font-medium text-slate-500">{b.label}</span>
+                <span className="text-[9px] font-medium text-slate-600">{b.label}</span>
               </div>
             ))}
           </div>
 
-          {/* Promotional video section */}
-          <div className="w-full max-w-4xl mb-2 md:mb-4 px-4">
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full rounded-2xl shadow-2xl shadow-purple-200/40 border border-white/60"
-              style={{ maxHeight: '280px', objectFit: 'cover' }}
-            >
-              <source src="/coming-soon-banner.mp4" type="video/mp4" />
-            </video>
-          </div>
-
-          {/* Desktop: tutors + side bubbles */}
-          <div className="hidden md:flex items-end justify-center w-full max-w-5xl relative flex-1">
-
-            {/* Left bubbles */}
-            <div className="flex flex-col gap-4 mr-4 mb-6 items-end justify-center flex-1">
+          {/* Middle area: side bubbles flanking the video tutors (which are baked into the bg) */}
+          <div className="hidden md:flex flex-1 items-center justify-between w-full max-w-7xl mx-auto px-2 lg:px-8 min-h-0">
+            {/* Left column */}
+            <div className="flex flex-col gap-5 lg:gap-6 items-center">
               {LEFT_BUBBLES.map((b, i) => (
                 <GlassBubble key={b.label} flag={b.flag} label={b.label} size={b.size} index={i} side="left" />
               ))}
             </div>
 
-            {/* Tutors */}
-            <div className="flex items-end justify-center gap-1">
-              {TUTORS.map((tutor, i) => {
-                const maxH = parseInt(tutor.h.match(/(\d+)px\)$/)?.[1] ?? '240');
-                return <TutorImage key={i} src={tutor.src} height={maxH} delay={i} />;
-              })}
-            </div>
+            {/* Spacer — video below shows the tutors */}
+            <div className="flex-1" />
 
-            {/* Right bubbles */}
-            <div className="flex flex-col gap-4 ml-4 mb-6 items-start justify-center flex-1">
+            {/* Right column */}
+            <div className="flex flex-col gap-5 lg:gap-6 items-center">
               {RIGHT_BUBBLES.map((b, i) => (
                 <GlassBubble key={b.label} flag={b.flag} label={b.label} size={b.size} index={i + 5} side="right" />
               ))}
             </div>
           </div>
 
-          {/* Mobile tutors */}
-          <div className="flex md:hidden items-end justify-center gap-0 w-full flex-1">
-            {TUTORS.map((tutor, i) => {
-              const maxH = parseInt(tutor.h.match(/(\d+)px\)$/)?.[1] ?? '185');
-              const mobileH = Math.round(maxH * 0.6);
-              return <TutorImage key={i} src={tutor.src} height={mobileH} delay={i} />;
-            })}
-          </div>
-
-          {/* Waitlist card — overlaps tutors */}
-          <div className="w-full max-w-md bg-white/65 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl shadow-purple-100/50 px-4 md:px-6 py-3 md:py-4 mx-4 -mt-12 md:-mt-16 z-10">
-            {status === 'success' ? (
-              <div className="flex flex-col items-center gap-2 py-2">
-                <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                </div>
-                <p className="font-bold text-slate-800">{t.success}</p>
-                <p className="text-sm text-slate-500 text-center">{t.successSub}</p>
-              </div>
-            ) : status === 'duplicate' ? (
-              <div className="flex flex-col items-center gap-2 py-2">
-                <div className="w-11 h-11 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                </div>
-                <p className="font-bold text-slate-800">{t.duplicate}</p>
-                <p className="text-sm text-slate-500 text-center">{t.duplicateSub}</p>
-              </div>
-            ) : (
-              <>
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-2">
-                  <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 md:px-4">
-                    <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                      placeholder={t.placeholder}
-                      className="flex-1 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent min-w-0" />
+          {/* Bottom: form card + privacy + features */}
+          <div className="w-full max-w-2xl mx-auto pb-4 md:pb-6 mt-3 md:mt-0">
+            <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
+              {status === 'success' ? (
+                <div className="flex flex-col items-center gap-1.5 py-1">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                   </div>
-                  <button type="submit" disabled={status === 'loading'}
-                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm px-5 py-3 rounded-xl transition-all disabled:opacity-60 shadow-md shadow-indigo-300/40 whitespace-nowrap">
-                    {status === 'loading' ? '...' : t.cta}
-                  </button>
-                </form>
-                {status === 'error' && <p className="text-red-500 text-xs text-center mb-1">{t.error}</p>}
-                <div className="flex items-center justify-center gap-1.5 text-slate-400 text-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span>{t.privacy}</span>
+                  <p className="font-bold text-slate-800 text-sm">{t.success}</p>
+                  <p className="text-xs text-slate-500 text-center">{t.successSub}</p>
                 </div>
-              </>
-            )}
-          </div>
-
-          {/* Social proof */}
-          {waitlistCount !== null && waitlistCount > 0 && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
-              <div className="flex -space-x-1.5">
-                {['👩','👨','🧑'].map((emoji, i) => (
-                  <div key={i} className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-[9px]">
-                    {emoji}
+              ) : status === 'duplicate' ? (
+                <div className="flex flex-col items-center gap-1.5 py-1">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                   </div>
-                ))}
-              </div>
-              <span className="font-semibold text-indigo-600">{waitlistCount.toLocaleString()}</span>
-              <span>{t.joined}</span>
+                  <p className="font-bold text-slate-800 text-sm">{t.duplicate}</p>
+                  <p className="text-xs text-slate-500 text-center">{t.duplicateSub}</p>
+                </div>
+              ) : (
+                <>
+                  <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 md:px-4">
+                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder={t.placeholder}
+                        className="flex-1 py-2.5 md:py-3 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent min-w-0"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={status === 'loading'}
+                      className="w-full sm:w-auto text-white font-bold text-sm px-6 py-2.5 md:py-3 rounded-xl transition-all disabled:opacity-60 whitespace-nowrap active:scale-95"
+                      style={{
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
+                        boxShadow: '0 8px 22px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.3)',
+                      }}
+                    >
+                      {status === 'loading' ? '...' : t.cta}
+                    </button>
+                  </form>
+                  {status === 'error' && <p className="text-red-500 text-xs text-center mt-2">{t.error}</p>}
+                  <div className="flex items-center justify-center gap-1.5 text-slate-500 text-xs mt-2">
+                    <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-indigo-500" />
+                    <span>{t.privacy}</span>
+                  </div>
+                </>
+              )}
             </div>
-          )}
 
-          {/* Badges + footer */}
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-2 md:mt-3 px-4">
-            {[
-              { icon: <Users className="w-3 h-3 text-slate-400" />,       label: t.badge1 },
-              { icon: <Cpu className="w-3 h-3 text-slate-400" />,         label: t.badge2 },
-              { icon: <ShieldCheck className="w-3 h-3 text-slate-400" />, label: t.badge3 },
-            ].map((b) => (
-              <div key={b.label} className="flex items-center gap-1 text-slate-500 text-[10px] md:text-xs font-medium">
-                {b.icon}<span>{b.label}</span>
+            {/* Social proof */}
+            {waitlistCount !== null && waitlistCount > 0 && (
+              <div className="flex items-center justify-center gap-1.5 mt-2.5 text-xs text-slate-600">
+                <div className="flex -space-x-1.5">
+                  {['👩','👨','🧑'].map((emoji, i) => (
+                    <div key={i} className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-[9px]">
+                      {emoji}
+                    </div>
+                  ))}
+                </div>
+                <span className="font-semibold text-indigo-700">{waitlistCount.toLocaleString()}</span>
+                <span>{t.joined}</span>
               </div>
-            ))}
+            )}
+
+            {/* Features */}
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-3 px-2">
+              {[
+                { icon: <Users className="w-3.5 h-3.5 text-indigo-500" />,       label: t.badge1 },
+                { icon: <Cpu className="w-3.5 h-3.5 text-indigo-500" />,         label: t.badge2 },
+                { icon: <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />, label: t.badge3 },
+              ].map((b) => (
+                <div key={b.label} className="flex items-center gap-1.5 text-slate-700 text-[11px] md:text-xs font-medium">
+                  {b.icon}<span>{b.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-slate-500/80 text-[10px] text-center mt-2">© 2026 ChatLingo. All rights reserved.</p>
           </div>
-          <p className="text-slate-400/50 text-[10px] mt-1.5 pb-3">© 2026 ChatLingo. All rights reserved.</p>
         </div>
       </div>
     </>
