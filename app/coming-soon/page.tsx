@@ -8,30 +8,119 @@ import { useUILanguage, UI_LANGUAGES } from '@/contexts/UILanguageContext';
 
 // ── Translations ──────────────────────────────────────────────────────────────
 const T: Record<string, {
-  coming: string; sub1: string; sub2: string;
+  typewriter: string; sub1: string; sub2: string;
   placeholder: string; cta: string; privacy: string;
   badge1: string; badge2: string; badge3: string;
   success: string; successSub: string;
   duplicate: string; duplicateSub: string; error: string;
   joined: string; copyright: string;
 }> = {
-  en: { coming: 'COMING SOON', sub1: 'The future of learning is personalized.', sub2: 'AI tutors that understand you. Teach you. Elevate you.', placeholder: 'Enter your email address', cta: 'NOTIFY ME', privacy: 'We respect your privacy. No spam, ever.', badge1: 'Personalized Learning', badge2: 'Adaptive AI Technology', badge3: 'Trusted & Secure', success: "You're on the list!", successSub: "We'll notify you as soon as we open.", duplicate: 'Already signed up!', duplicateSub: 'Your email is already on the waitlist.', error: 'Something went wrong. Try again.', joined: 'people already joined', copyright: '© 2026 ChatLingo. All rights reserved.' },
-  it: { coming: 'COMING SOON', sub1: "Il futuro dell'apprendimento è personalizzato.", sub2: 'Tutor AI che ti capiscono. Ti insegnano. Ti elevano.', placeholder: 'Inserisci la tua email', cta: 'AVVISAMI', privacy: 'Rispettiamo la tua privacy. Niente spam.', badge1: 'Apprendimento Personalizzato', badge2: 'Tecnologia AI Adattiva', badge3: 'Sicuro & Affidabile', success: 'Sei nella lista!', successSub: 'Ti avviseremo non appena apriamo.', duplicate: 'Già iscritto!', duplicateSub: 'Questa email è già nella lista.', error: 'Qualcosa è andato storto. Riprova.', joined: 'persone già iscritte', copyright: '© 2026 ChatLingo. Tutti i diritti riservati.' },
-  es: { coming: 'PRÓXIMAMENTE', sub1: 'El futuro del aprendizaje es personalizado.', sub2: 'Tutores de IA que te entienden. Te enseñan. Te elevan.', placeholder: 'Ingresa tu email', cta: 'NOTIFÍCAME', privacy: 'Respetamos tu privacidad. Sin spam.', badge1: 'Aprendizaje Personalizado', badge2: 'Tecnología IA Adaptiva', badge3: 'Confiable y Seguro', success: '¡Estás en la lista!', successSub: 'Te avisaremos en cuanto abramos.', duplicate: '¡Ya registrado!', duplicateSub: 'Este email ya está en la lista.', error: 'Algo salió mal. Inténtalo de nuevo.', joined: 'personas ya unidas', copyright: '© 2026 ChatLingo. Todos los derechos reservados.' },
-  fr: { coming: 'BIENTÔT', sub1: "L'avenir de l'apprentissage est personnalisé.", sub2: "Des tuteurs IA qui te comprennent. T'enseignent. T'élèvent.", placeholder: 'Entre ton adresse email', cta: 'ME NOTIFIER', privacy: 'Nous respectons ta vie privée. Zéro spam.', badge1: 'Apprentissage Personnalisé', badge2: 'Technologie IA Adaptative', badge3: 'Sécurisé & Fiable', success: 'Tu es sur la liste !', successSub: "On te préviendra dès qu'on ouvre.", duplicate: 'Déjà inscrit !', duplicateSub: 'Cet email est déjà sur la liste.', error: 'Une erreur est survenue. Réessaie.', joined: 'personnes déjà inscrites', copyright: '© 2026 ChatLingo. Tous droits réservés.' },
-  de: { coming: 'DEMNÄCHST', sub1: 'Die Zukunft des Lernens ist personalisiert.', sub2: 'KI-Tutoren, die dich verstehen. Dich lehren. Dich voranbringen.', placeholder: 'Deine E-Mail-Adresse', cta: 'BENACHRICHTIGE MICH', privacy: 'Wir respektieren deine Privatsphäre. Kein Spam.', badge1: 'Personalisiertes Lernen', badge2: 'Adaptive KI-Technologie', badge3: 'Vertrauenswürdig & Sicher', success: 'Du bist auf der Liste!', successSub: 'Wir benachrichtigen dich bei der Eröffnung.', duplicate: 'Bereits angemeldet!', duplicateSub: 'Diese E-Mail ist bereits auf der Liste.', error: 'Etwas ist schiefgelaufen. Versuch es nochmal.', joined: 'Personen bereits dabei', copyright: '© 2026 ChatLingo. Alle Rechte vorbehalten.' },
-  pt: { coming: 'EM BREVE', sub1: 'O futuro do aprendizado é personalizado.', sub2: 'Tutores de IA que te entendem. Te ensinam. Te elevam.', placeholder: 'Digite seu email', cta: 'ME AVISE', privacy: 'Respeitamos sua privacidade. Sem spam.', badge1: 'Aprendizado Personalizado', badge2: 'Tecnologia IA Adaptativa', badge3: 'Confiável e Seguro', success: 'Você está na lista!', successSub: 'Avisaremos assim que abrirmos.', duplicate: 'Já cadastrado!', duplicateSub: 'Este email já está na lista.', error: 'Algo deu errado. Tente novamente.', joined: 'pessoas já inscritas', copyright: '© 2026 ChatLingo. Todos os direitos reservados.' },
-  ja: { coming: 'もうすぐ公開', sub1: '学びの未来はパーソナライズされている。', sub2: 'あなたを理解し、教え、高めるAIチューター。', placeholder: 'メールアドレスを入力', cta: '通知を受け取る', privacy: 'プライバシーを尊重します。スパムなし。', badge1: 'パーソナライズ学習', badge2: '適応型AI技術', badge3: '安全・安心', success: 'リストに登録されました！', successSub: 'オープン時にお知らせします。', duplicate: '既に登録済みです！', duplicateSub: 'このメールは既にリストにあります。', error: 'エラーが発生しました。再試行してください。', joined: '人がすでに参加中', copyright: '© 2026 ChatLingo. すべての権利を保有しています。' },
-  zh: { coming: '即将推出', sub1: '学习的未来是个性化的。', sub2: '理解你、教导你、提升你的AI导师。', placeholder: '输入您的邮箱地址', cta: '通知我', privacy: '我们尊重您的隐私，绝不发送垃圾邮件。', badge1: '个性化学习', badge2: '自适应AI技术', badge3: '安全可信', success: '您已加入名单！', successSub: '开放时我们会立即通知您。', duplicate: '已经注册！', duplicateSub: '此邮箱已在名单中。', error: '出了点问题，请重试。', joined: '人已加入', copyright: '© 2026 ChatLingo. 版权所有。' },
-  ko: { coming: '곧 출시', sub1: '학습의 미래는 개인화입니다.', sub2: '당신을 이해하고, 가르치고, 성장시키는 AI 튜터.', placeholder: '이메일 주소 입력', cta: '알림 받기', privacy: '개인정보를 존중합니다. 스팸 없음.', badge1: '개인화 학습', badge2: '적응형 AI 기술', badge3: '신뢰 & 보안', success: '명단에 등록되었습니다!', successSub: '오픈하면 바로 알려드리겠습니다.', duplicate: '이미 등록되었습니다!', duplicateSub: '이 이메일은 이미 명단에 있습니다.', error: '문제가 발생했습니다. 다시 시도해주세요.', joined: '명이 이미 참여', copyright: '© 2026 ChatLingo. 모든 권리 보유.' },
-  ru: { coming: 'СКОРО', sub1: 'Будущее обучения — персонализация.', sub2: 'ИИ-репетиторы, которые понимают, учат и развивают тебя.', placeholder: 'Введи свой email', cta: 'УВЕДОМИТЬ', privacy: 'Мы уважаем твою конфиденциальность. Никакого спама.', badge1: 'Персонализированное обучение', badge2: 'Адаптивные технологии ИИ', badge3: 'Надёжно и безопасно', success: 'Ты в списке!', successSub: 'Уведомим, как только откроемся.', duplicate: 'Уже зарегистрирован!', duplicateSub: 'Этот email уже в списке.', error: 'Что-то пошло не так. Попробуй снова.', joined: 'человек уже присоединились', copyright: '© 2026 ChatLingo. Все права защищены.' },
-  ar: { coming: 'قريباً', sub1: 'مستقبل التعلم هو التخصيص.', sub2: 'مدرسون بالذكاء الاصطناعي يفهمونك ويعلمونك ويرفعونك.', placeholder: 'أدخل بريدك الإلكتروني', cta: 'أخبرني', privacy: 'نحترم خصوصيتك. لا بريد مزعج أبداً.', badge1: 'تعلم شخصي', badge2: 'تقنية ذكاء اصطناعي تكيفية', badge3: 'موثوق وآمن', success: 'أنت في القائمة!', successSub: 'سنخبرك فور الافتتاح.', duplicate: 'مسجل بالفعل!', duplicateSub: 'هذا البريد موجود بالفعل في القائمة.', error: 'حدث خطأ ما. حاول مرة أخرى.', joined: 'شخصاً انضم بالفعل', copyright: '© 2026 ChatLingo. جميع الحقوق محفوظة.' },
-  hi: { coming: 'जल्द आ रहा है', sub1: 'सीखने का भविष्य व्यक्तिगत है।', sub2: 'AI ट्यूटर जो आपको समझते, सिखाते और आगे बढ़ाते हैं।', placeholder: 'अपना ईमेल दर्ज करें', cta: 'सूचित करें', privacy: 'हम आपकी गोपनीयता का सम्मान करते हैं। कोई स्पैम नहीं।', badge1: 'व्यक्तिगत शिक्षा', badge2: 'अनुकूली AI तकनीक', badge3: 'विश्वसनीय और सुरक्षित', success: 'आप सूची में हैं!', successSub: 'खुलने पर हम आपको सूचित करेंगे।', duplicate: 'पहले से पंजीकृत!', duplicateSub: 'यह ईमेल पहले से सूची में है।', error: 'कुछ गलत हुआ। फिर कोशिश करें।', joined: 'लोग पहले से जुड़े हैं', copyright: '© 2026 ChatLingo. सर्वाधिकार सुरक्षित।' },
-  tr: { coming: 'YAKINDA', sub1: 'Öğrenmenin geleceği kişiselleştirilmiş.', sub2: 'Seni anlayan, öğreten ve yükselten AI öğretmenler.', placeholder: 'E-posta adresinizi girin', cta: 'BİLDİR', privacy: 'Gizliliğinize saygı duyuyoruz. Spam yok.', badge1: 'Kişiselleştirilmiş Öğrenme', badge2: 'Uyarlanabilir AI Teknolojisi', badge3: 'Güvenilir ve Güvenli', success: 'Listedesin!', successSub: 'Açıldığımızda seni bilgilendireceğiz.', duplicate: 'Zaten kayıtlısın!', duplicateSub: 'Bu e-posta zaten listede.', error: 'Bir şeyler yanlış gitti. Tekrar dene.', joined: 'kişi zaten katıldı', copyright: '© 2026 ChatLingo. Tüm hakları saklıdır.' },
-  nl: { coming: 'BINNENKORT', sub1: 'De toekomst van leren is gepersonaliseerd.', sub2: 'AI-tutors die jou begrijpen. Leren. Verheffen.', placeholder: 'Voer je e-mailadres in', cta: 'MELD MIJ AAN', privacy: 'We respecteren je privacy. Geen spam.', badge1: 'Gepersonaliseerd Leren', badge2: 'Adaptieve AI-technologie', badge3: 'Vertrouwd & Veilig', success: 'Je staat op de lijst!', successSub: 'We laten je weten zodra we openen.', duplicate: 'Al aangemeld!', duplicateSub: 'Dit e-mailadres staat al op de lijst.', error: 'Er ging iets mis. Probeer het opnieuw.', joined: 'mensen al aangemeld', copyright: '© 2026 ChatLingo. Alle rechten voorbehouden.' },
-  pl: { coming: 'WKRÓTCE', sub1: 'Przyszłość nauki jest spersonalizowana.', sub2: 'Tutorzy AI, którzy cię rozumieją. Uczą. Rozwijają.', placeholder: 'Wpisz swój adres email', cta: 'POWIADOM MNIE', privacy: 'Szanujemy Twoją prywatność. Żadnego spamu.', badge1: 'Spersonalizowana Nauka', badge2: 'Adaptacyjna Technologia AI', badge3: 'Zaufany i Bezpieczny', success: 'Jesteś na liście!', successSub: 'Powiadomimy cię, gdy się otworzymy.', duplicate: 'Już zapisany!', duplicateSub: 'Ten email jest już na liście.', error: 'Coś poszło nie tak. Spróbuj ponownie.', joined: 'osób już dołączyło', copyright: '© 2026 ChatLingo. Wszystkie prawa zastrzeżone.' },
+  en: { typewriter: "We're coming soon", sub1: 'The future of learning is personalized.', sub2: 'AI tutors that understand you. Teach you. Elevate you.', placeholder: 'Enter your email address', cta: 'NOTIFY ME', privacy: 'We respect your privacy. No spam, ever.', badge1: 'Personalized Learning', badge2: 'Adaptive AI Technology', badge3: 'Trusted & Secure', success: "You're on the list!", successSub: "We'll notify you as soon as we open.", duplicate: 'Already signed up!', duplicateSub: 'Your email is already on the waitlist.', error: 'Something went wrong. Try again.', joined: 'people already joined', copyright: '© 2026 ChatLingo. All rights reserved.' },
+  it: { typewriter: 'Stiamo arrivando', sub1: "Il futuro dell'apprendimento è personalizzato.", sub2: 'Tutor AI che ti capiscono. Ti insegnano. Ti elevano.', placeholder: 'Inserisci la tua email', cta: 'AVVISAMI', privacy: 'Rispettiamo la tua privacy. Niente spam.', badge1: 'Apprendimento Personalizzato', badge2: 'Tecnologia AI Adattiva', badge3: 'Sicuro & Affidabile', success: 'Sei nella lista!', successSub: 'Ti avviseremo non appena apriamo.', duplicate: 'Già iscritto!', duplicateSub: 'Questa email è già nella lista.', error: 'Qualcosa è andato storto. Riprova.', joined: 'persone già iscritte', copyright: '© 2026 ChatLingo. Tutti i diritti riservati.' },
+  es: { typewriter: 'Llegamos pronto', sub1: 'El futuro del aprendizaje es personalizado.', sub2: 'Tutores de IA que te entienden. Te enseñan. Te elevan.', placeholder: 'Ingresa tu email', cta: 'NOTIFÍCAME', privacy: 'Respetamos tu privacidad. Sin spam.', badge1: 'Aprendizaje Personalizado', badge2: 'Tecnología IA Adaptiva', badge3: 'Confiable y Seguro', success: '¡Estás en la lista!', successSub: 'Te avisaremos en cuanto abramos.', duplicate: '¡Ya registrado!', duplicateSub: 'Este email ya está en la lista.', error: 'Algo salió mal. Inténtalo de nuevo.', joined: 'personas ya unidas', copyright: '© 2026 ChatLingo. Todos los derechos reservados.' },
+  fr: { typewriter: 'Nous arrivons bientôt', sub1: "L'avenir de l'apprentissage est personnalisé.", sub2: "Des tuteurs IA qui te comprennent. T'enseignent. T'élèvent.", placeholder: 'Entre ton adresse email', cta: 'ME NOTIFIER', privacy: 'Nous respectons ta vie privée. Zéro spam.', badge1: 'Apprentissage Personnalisé', badge2: 'Technologie IA Adaptative', badge3: 'Sécurisé & Fiable', success: 'Tu es sur la liste !', successSub: "On te préviendra dès qu'on ouvre.", duplicate: 'Déjà inscrit !', duplicateSub: 'Cet email est déjà sur la liste.', error: 'Une erreur est survenue. Réessaie.', joined: 'personnes déjà inscrites', copyright: '© 2026 ChatLingo. Tous droits réservés.' },
+  de: { typewriter: 'Wir kommen bald', sub1: 'Die Zukunft des Lernens ist personalisiert.', sub2: 'KI-Tutoren, die dich verstehen. Dich lehren. Dich voranbringen.', placeholder: 'Deine E-Mail-Adresse', cta: 'BENACHRICHTIGE MICH', privacy: 'Wir respektieren deine Privatsphäre. Kein Spam.', badge1: 'Personalisiertes Lernen', badge2: 'Adaptive KI-Technologie', badge3: 'Vertrauenswürdig & Sicher', success: 'Du bist auf der Liste!', successSub: 'Wir benachrichtigen dich bei der Eröffnung.', duplicate: 'Bereits angemeldet!', duplicateSub: 'Diese E-Mail ist bereits auf der Liste.', error: 'Etwas ist schiefgelaufen. Versuch es nochmal.', joined: 'Personen bereits dabei', copyright: '© 2026 ChatLingo. Alle Rechte vorbehalten.' },
+  pt: { typewriter: 'Estamos chegando', sub1: 'O futuro do aprendizado é personalizado.', sub2: 'Tutores de IA que te entendem. Te ensinam. Te elevam.', placeholder: 'Digite seu email', cta: 'ME AVISE', privacy: 'Respeitamos sua privacidade. Sem spam.', badge1: 'Aprendizado Personalizado', badge2: 'Tecnologia IA Adaptativa', badge3: 'Confiável e Seguro', success: 'Você está na lista!', successSub: 'Avisaremos assim que abrirmos.', duplicate: 'Já cadastrado!', duplicateSub: 'Este email já está na lista.', error: 'Algo deu errado. Tente novamente.', joined: 'pessoas já inscritas', copyright: '© 2026 ChatLingo. Todos os direitos reservados.' },
+  ja: { typewriter: '近日公開', sub1: '学びの未来はパーソナライズされている。', sub2: 'あなたを理解し、教え、高めるAIチューター。', placeholder: 'メールアドレスを入力', cta: '通知を受け取る', privacy: 'プライバシーを尊重します。スパムなし。', badge1: 'パーソナライズ学習', badge2: '適応型AI技術', badge3: '安全・安心', success: 'リストに登録されました！', successSub: 'オープン時にお知らせします。', duplicate: '既に登録済みです！', duplicateSub: 'このメールは既にリストにあります。', error: 'エラーが発生しました。再試行してください。', joined: '人がすでに参加中', copyright: '© 2026 ChatLingo. すべての権利を保有しています。' },
+  zh: { typewriter: '即将上线', sub1: '学习的未来是个性化的。', sub2: '理解你、教导你、提升你的AI导师。', placeholder: '输入您的邮箱地址', cta: '通知我', privacy: '我们尊重您的隐私，绝不发送垃圾邮件。', badge1: '个性化学习', badge2: '自适应AI技术', badge3: '安全可信', success: '您已加入名单！', successSub: '开放时我们会立即通知您。', duplicate: '已经注册！', duplicateSub: '此邮箱已在名单中。', error: '出了点问题，请重试。', joined: '人已加入', copyright: '© 2026 ChatLingo. 版权所有。' },
+  ko: { typewriter: '곧 출시됩니다', sub1: '학습의 미래는 개인화입니다.', sub2: '당신을 이해하고, 가르치고, 성장시키는 AI 튜터.', placeholder: '이메일 주소 입력', cta: '알림 받기', privacy: '개인정보를 존중합니다. 스팸 없음.', badge1: '개인화 학습', badge2: '적응형 AI 기술', badge3: '신뢰 & 보안', success: '명단에 등록되었습니다!', successSub: '오픈하면 바로 알려드리겠습니다.', duplicate: '이미 등록되었습니다!', duplicateSub: '이 이메일은 이미 명단에 있습니다.', error: '문제가 발생했습니다. 다시 시도해주세요.', joined: '명이 이미 참여', copyright: '© 2026 ChatLingo. 모든 권리 보유.' },
+  ru: { typewriter: 'Скоро откроемся', sub1: 'Будущее обучения — персонализация.', sub2: 'ИИ-репетиторы, которые понимают, учат и развивают тебя.', placeholder: 'Введи свой email', cta: 'УВЕДОМИТЬ', privacy: 'Мы уважаем твою конфиденциальность. Никакого спама.', badge1: 'Персонализированное обучение', badge2: 'Адаптивные технологии ИИ', badge3: 'Надёжно и безопасно', success: 'Ты в списке!', successSub: 'Уведомим, как только откроемся.', duplicate: 'Уже зарегистрирован!', duplicateSub: 'Этот email уже в списке.', error: 'Что-то пошло не так. Попробуй снова.', joined: 'человек уже присоединились', copyright: '© 2026 ChatLingo. Все права защищены.' },
+  ar: { typewriter: 'قريباً جداً', sub1: 'مستقبل التعلم هو التخصيص.', sub2: 'مدرسون بالذكاء الاصطناعي يفهمونك ويعلمونك ويرفعونك.', placeholder: 'أدخل بريدك الإلكتروني', cta: 'أخبرني', privacy: 'نحترم خصوصيتك. لا بريد مزعج أبداً.', badge1: 'تعلم شخصي', badge2: 'تقنية ذكاء اصطناعي تكيفية', badge3: 'موثوق وآمن', success: 'أنت في القائمة!', successSub: 'سنخبرك فور الافتتاح.', duplicate: 'مسجل بالفعل!', duplicateSub: 'هذا البريد موجود بالفعل في القائمة.', error: 'حدث خطأ ما. حاول مرة أخرى.', joined: 'شخصاً انضم بالفعل', copyright: '© 2026 ChatLingo. جميع الحقوق محفوظة.' },
+  hi: { typewriter: 'जल्द आ रहा है', sub1: 'सीखने का भविष्य व्यक्तिगत है।', sub2: 'AI ट्यूटर जो आपको समझते, सिखाते और आगे बढ़ाते हैं।', placeholder: 'अपना ईमेल दर्ज करें', cta: 'सूचित करें', privacy: 'हम आपकी गोपनीयता का सम्मान करते हैं। कोई स्पैम नहीं।', badge1: 'व्यक्तिगत शिक्षा', badge2: 'अनुकूली AI तकनीक', badge3: 'विश्वसनीय और सुरक्षित', success: 'आप सूची में हैं!', successSub: 'खुलने पर हम आपको सूचित करेंगे।', duplicate: 'पहले से पंजीकृत!', duplicateSub: 'यह ईमेल पहले से सूची में है।', error: 'कुछ गलत हुआ। फिर कोशिश करें।', joined: 'लोग पहले से जुड़े हैं', copyright: '© 2026 ChatLingo. सर्वाधिकार सुरक्षित।' },
+  tr: { typewriter: 'Yakında geliyor', sub1: 'Öğrenmenin geleceği kişiselleştirilmiş.', sub2: 'Seni anlayan, öğreten ve yükselten AI öğretmenler.', placeholder: 'E-posta adresinizi girin', cta: 'BİLDİR', privacy: 'Gizliliğinize saygı duyuyoruz. Spam yok.', badge1: 'Kişiselleştirilmiş Öğrenme', badge2: 'Uyarlanabilir AI Teknolojisi', badge3: 'Güvenilir ve Güvenli', success: 'Listedesin!', successSub: 'Açıldığımızda seni bilgilendireceğiz.', duplicate: 'Zaten kayıtlısın!', duplicateSub: 'Bu e-posta zaten listede.', error: 'Bir şeyler yanlış gitti. Tekrar dene.', joined: 'kişi zaten katıldı', copyright: '© 2026 ChatLingo. Tüm hakları saklıdır.' },
+  nl: { typewriter: 'Binnenkort beschikbaar', sub1: 'De toekomst van leren is gepersonaliseerd.', sub2: 'AI-tutors die jou begrijpen. Leren. Verheffen.', placeholder: 'Voer je e-mailadres in', cta: 'MELD MIJ AAN', privacy: 'We respecteren je privacy. Geen spam.', badge1: 'Gepersonaliseerd Leren', badge2: 'Adaptieve AI-technologie', badge3: 'Vertrouwd & Veilig', success: 'Je staat op de lijst!', successSub: 'We laten je weten zodra we openen.', duplicate: 'Al aangemeld!', duplicateSub: 'Dit e-mailadres staat al op de lijst.', error: 'Er ging iets mis. Probeer het opnieuw.', joined: 'mensen al aangemeld', copyright: '© 2026 ChatLingo. Alle rechten voorbehouden.' },
+  pl: { typewriter: 'Już wkrótce', sub1: 'Przyszłość nauki jest spersonalizowana.', sub2: 'Tutorzy AI, którzy cię rozumieją. Uczą. Rozwijają.', placeholder: 'Wpisz swój adres email', cta: 'POWIADOM MNIE', privacy: 'Szanujemy Twoją prywatność. Żadnego spamu.', badge1: 'Spersonalizowana Nauka', badge2: 'Adaptacyjna Technologia AI', badge3: 'Zaufany i Bezpieczny', success: 'Jesteś na liście!', successSub: 'Powiadomimy cię, gdy się otworzymy.', duplicate: 'Już zapisany!', duplicateSub: 'Ten email jest już na liście.', error: 'Coś poszło nie tak. Spróbuj ponownie.', joined: 'osób już dołączyło', copyright: '© 2026 ChatLingo. Wszystkie prawa zastrzeżone.' },
 };
 
+// ── Typewriter animation component ────────────────────────────────────────────
+function TypewriterHero() {
+  const LANGUAGES = [
+    { flag: '🇮🇹', code: 'it' },
+    { flag: '🇺🇸', code: 'en' },
+    { flag: '🇩🇪', code: 'de' },
+    { flag: '🇫🇷', code: 'fr' },
+    { flag: '🇪🇸', code: 'es' },
+    { flag: '🇯🇵', code: 'ja' },
+    { flag: '🇰🇷', code: 'ko' },
+    { flag: '🇧🇷', code: 'pt' },
+    { flag: '🇨🇳', code: 'zh' },
+    { flag: '🇷🇺', code: 'ru' },
+    { flag: '🇸🇦', code: 'ar' },
+    { flag: '🇮🇳', code: 'hi' },
+    { flag: '🇹🇷', code: 'tr' },
+    { flag: '🇳🇱', code: 'nl' },
+    { flag: '🇵🇱', code: 'pl' },
+  ];
+
+  const [displayText, setDisplayText] = useState('');
+  const [currentLangIdx, setCurrentLangIdx] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
+  const [currentFlag, setCurrentFlag] = useState(LANGUAGES[0].flag);
+
+  const fullText = T[LANGUAGES[currentLangIdx].code].typewriter;
+
+  useEffect(() => {
+    const typingDelay = 50;
+    const deletingDelay = 30;
+    const pauseDuration = 2800;
+
+    let timeout: NodeJS.Timeout;
+
+    if (isTyping) {
+      if (displayText.length < fullText.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(fullText.slice(0, displayText.length + 1));
+        }, typingDelay);
+      } else {
+        timeout = setTimeout(() => {
+          setIsTyping(false);
+        }, pauseDuration);
+      }
+    } else {
+      if (displayText.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayText(fullText.slice(0, displayText.length - 1));
+        }, deletingDelay);
+      } else {
+        setCurrentLangIdx((prev) => (prev + 1) % LANGUAGES.length);
+        setCurrentFlag(LANGUAGES[(currentLangIdx + 1) % LANGUAGES.length].flag);
+        setIsTyping(true);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isTyping, fullText, currentLangIdx]);
+
+  useEffect(() => {
+    setCurrentFlag(LANGUAGES[currentLangIdx].flag);
+  }, [currentLangIdx]);
+
+  return (
+    <div className="flex flex-col items-center gap-3 md:gap-4">
+      <div className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none min-h-[3rem] md:min-h-[4rem] lg:min-h-[5rem] flex items-center justify-center">
+        <span
+          className="inline-block"
+          style={{
+            background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
+          }}
+        >
+          {displayText}
+          <span
+            className="inline-block w-1 h-[1em] bg-indigo-600 ml-1 animate-pulse"
+            style={{
+              animationDuration: '0.6s',
+              verticalAlign: 'text-bottom',
+            }}
+          />
+        </span>
+      </div>
+      <div className="text-3xl md:text-4xl opacity-80">{currentFlag}</div>
+    </div>
+  );
+}
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function ComingSoonPage() {
@@ -157,29 +246,15 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          {/* Headline */}
-          <div className="w-full max-w-5xl mx-auto text-center mt-3 md:mt-4">
-            <h1
-              className="font-black tracking-tight leading-none mb-2"
-              style={{
-                fontSize: 'clamp(2.2rem, 8vw, 5.5rem)',
-                background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
-              }}
-            >
-              {t.coming}
-            </h1>
-            <p className="text-slate-800 font-bold text-sm md:text-base mb-0.5">{t.sub1}</p>
+          {/* Typewriter hero + subtext */}
+          <div className="w-full max-w-5xl mx-auto text-center mt-6 md:mt-10 flex-1 flex flex-col items-center justify-center gap-2 md:gap-3">
+            <TypewriterHero />
+            <p className="text-slate-800 font-bold text-sm md:text-base">{t.sub1}</p>
             <p className="text-slate-500 text-xs md:text-sm">{t.sub2}</p>
           </div>
 
-          {/* Spacer — video tutors and language bubbles are baked into the background video */}
-          <div className="flex-1" />
-
           {/* Bottom: form card + privacy + features */}
-          <div className="w-full max-w-2xl mx-auto pb-4 md:pb-6 mt-3 md:mt-0">
+          <div className="w-full max-w-2xl mx-auto pb-4 md:pb-6 mt-4 md:mt-6">
             <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
               {status === 'success' ? (
                 <div className="flex flex-col items-center gap-1.5 py-1">
