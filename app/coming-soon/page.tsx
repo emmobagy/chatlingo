@@ -348,7 +348,6 @@ export default function ComingSoonPage() {
           <p className="text-slate-500/80 text-[10px]">{t.copyright}</p>
         </div>
       </div>
-    </div>
     </>
   );
 }
