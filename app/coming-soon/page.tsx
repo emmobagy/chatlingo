@@ -270,10 +270,10 @@ export default function ComingSoonPage() {
           <div className="flex-1" />
         </div>
 
-        {/* Form card - fixed position at bottom, always visible */}
-        <div className="fixed bottom-0 left-0 right-0 z-10 pb-4 md:pb-6 px-4">
-          <div className="w-full max-w-2xl mx-auto">
-            <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
+        {/* Form card background - extends to footer */}
+        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/70 backdrop-blur-2xl">
+          <div className="w-full max-w-2xl mx-auto px-4 py-3 md:py-4">
+            <div className="border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
               {status === 'success' ? (
                 <div className="flex flex-col items-center gap-1.5 py-1">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -356,11 +356,11 @@ export default function ComingSoonPage() {
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Footer section (bottom) */}
-        <div className="relative z-10 pb-4 md:pb-6 px-4 text-center">
-          <p className="text-slate-500/80 text-[10px]">{t.copyright}</p>
+          {/* Footer section inside form background */}
+          <div className="w-full px-4 py-3 md:py-4 text-center border-t border-white/40">
+            <p className="text-slate-500/80 text-[10px]">{t.copyright}</p>
+          </div>
         </div>
       </div>
     </>
