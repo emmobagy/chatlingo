@@ -253,8 +253,10 @@ export default function ComingSoonPage() {
 
           {/* Flexible spacer - takes remaining space */}
           <div className="flex-1" />
+        </div>
 
-          {/* Form card - positioned at bottom */}
+        {/* Form card - fixed position at bottom, always visible */}
+        <div className="fixed bottom-0 left-0 right-0 z-10 pb-4 md:pb-6 px-4">
           <div className="w-full max-w-2xl mx-auto">
             <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
               {status === 'success' ? (
