@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function isAuth()         { return request.auth != null; }
+    function isOwner(uid)     { return request.auth.uid == uid; }
+    function isVerified()     { return request.auth.token.email_verified == true; }
+    function isAdmin()        { return request.auth.uid == 'vIg72SkXb5fWs2wgfrQou0Bpr282'; }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow get:    if isAuth() && (isOwner(userId) || isAdmin());
+      allow list:   if isAdmin();                      // only admin can list all users
+      allow create: if isAuth() && isOwner(userId);
+      allow update: if (isAuth() && isOwner(userId)
+                    // Prevent users from manually escalating their own subscription
+                    && !('subscription' in request.resource.data.diff(resource.data).affectedKeys())
+                    && !('stripeCustomerId' in request.resource.data.diff(resource.data).affectedKeys())
+                    && !('stripeSubscriptionId' in request.resource.data.diff(resource.data).affectedKeys()))
+                    || isAdmin();                      // admin can update anything
+      allow delete: if false;                          // only Cloud Functions can delete
+
+      // ── Conversations ───────────────────────────────────────────────────────
+      match /conversations/{convId} {
+        allow read:   if isAuth() && isOwner(userId);
+        allow create: if isAuth() && isOwner(userId);
+        allow update: if isAuth() && isOwner(userId);
+        allow delete: if isAuth() && isOwner(userId);
+      }
+
+      // ── Weak points — written only by Cloud Functions ───────────────────────
+      match /weakPoints/{docId} {
+        allow read:  if isAuth() && isOwner(userId);
+        allow write: if false;
+      }
+
+      // ── Stats — written only by Cloud Functions ─────────────────────────────
+      match /stats/{statId} {
+        allow read:  if isAuth() && isOwner(userId);
+        allow write: if false;
+      }
+    }
+
+    // ── Waitlist — anyone can add their email, only admin can read ────────────
+    match /waitlist/{docId} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt', 'source'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 254;
+      allow read:   if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ── API usage — only server (admin SDK) can write, admin can read ─────────
+    match /api_usage/{docId} {
+      allow read:  if isAdmin();
+      allow write: if false;
+    }
+
+    // ── Difficult words ───────────────────────────────────────────────────────
+    match /users/{userId}/difficultWords/{docId} {
+      allow read, write: if isAuth() && isOwner(userId);
+    }
+
+    // ── Block everything else ─────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
