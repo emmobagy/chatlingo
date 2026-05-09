@@ -98,23 +98,30 @@ function TypewriterHero() {
   return (
     <div className="flex items-center justify-center">
       <span
-        className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-flex items-center"
-        style={{
-          background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
-        }}
+        className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-flex items-center gap-0.5"
+        style={{ lineHeight: 1.2 }}
       >
-        {displayText}
+        {/* Gradient text only on displayText */}
         <span
-          className="inline-block w-0.5 h-[1em] bg-indigo-600 ml-1 animate-pulse"
+          style={{
+            background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
+          }}
+        >
+          {displayText}
+        </span>
+        {/* Cursor (visible, not affected by gradient) */}
+        <span
+          className="inline-block w-0.5 h-[1em] bg-indigo-600 animate-pulse"
           style={{
             animationDuration: '0.6s',
             verticalAlign: 'text-bottom',
           }}
         />
-        <span className="text-2xl md:text-3xl lg:text-4xl ml-0.5">{currentFlag}</span>
+        {/* Flag (visible, not affected by gradient) */}
+        <span className="text-2xl md:text-3xl lg:text-4xl">{currentFlag}</span>
       </span>
     </div>
   );
@@ -245,7 +252,7 @@ export default function ComingSoonPage() {
           </div>
 
           {/* Hero content - positioned at top */}
-          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-3 md:gap-3.5 px-2 pt-8 md:pt-12 pb-12 md:pb-16">
+          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-5 md:gap-6 px-2 pt-8 md:pt-12 pb-12 md:pb-16">
             <TypewriterHero />
             <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
             <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
