@@ -203,37 +203,6 @@ export default function ComingSoonPage() {
           }}
         />
 
-        {/* ── Language Bubbles (Left) ── */}
-        <div className="absolute left-4 md:left-6 lg:left-10 top-1/4 flex flex-col gap-3 md:gap-4 z-20 hidden md:flex">
-          {[
-            { flag: '🇺🇸', name: 'English' },
-            { flag: '🇪🇸', name: 'Spanish' },
-            { flag: '🇫🇷', name: 'French' },
-            { flag: '🇮🇹', name: 'Italian' },
-            { flag: '🇩🇪', name: 'German' },
-          ].map((lang, i) => (
-            <div key={i} className="flex flex-col items-center gap-1.5 backdrop-blur-md bg-white/40 rounded-full p-3 md:p-3.5 shadow-lg hover:bg-white/60 transition-all">
-              <span className="text-xl md:text-2xl">{lang.flag}</span>
-              <span className="text-[10px] md:text-xs font-medium text-slate-700 whitespace-nowrap">{lang.name}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Language Bubbles (Right) ── */}
-        <div className="absolute right-4 md:right-6 lg:right-10 top-1/4 flex flex-col gap-3 md:gap-4 z-20 hidden md:flex">
-          {[
-            { flag: '🇧🇷', name: 'Portuguese' },
-            { flag: '🇸🇦', name: 'Arabic' },
-            { flag: '🇯🇵', name: 'Japanese' },
-            { flag: '🇨🇳', name: 'Chinese' },
-          ].map((lang, i) => (
-            <div key={i} className="flex flex-col items-center gap-1.5 backdrop-blur-md bg-white/40 rounded-full p-3 md:p-3.5 shadow-lg hover:bg-white/60 transition-all">
-              <span className="text-xl md:text-2xl">{lang.flag}</span>
-              <span className="text-[10px] md:text-xs font-medium text-slate-700 whitespace-nowrap">{lang.name}</span>
-            </div>
-          ))}
-        </div>
-
         {/* ── Foreground content ── */}
         <div className="relative z-10 h-full w-full flex flex-col px-4">
 
@@ -275,18 +244,19 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          {/* Middle section: hero + form centered */}
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8">
-            {/* Hero content */}
-            <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-3 md:gap-3.5 px-2">
-              <TypewriterHero />
-              <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
-              <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
-            </div>
+          {/* Hero content - positioned at top */}
+          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-3 md:gap-3.5 px-2 pt-8 md:pt-12 pb-12 md:pb-16">
+            <TypewriterHero />
+            <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
+            <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
+          </div>
 
-            {/* Form card */}
-            <div className="w-full max-w-2xl">
-              <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
+          {/* Flexible spacer - takes remaining space */}
+          <div className="flex-1" />
+
+          {/* Form card - positioned at bottom */}
+          <div className="w-full max-w-2xl mx-auto">
+            <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
               {status === 'success' ? (
                 <div className="flex flex-col items-center gap-1.5 py-1">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
