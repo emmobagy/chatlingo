@@ -244,11 +244,11 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          {/* Typewriter hero + subtext */}
-          <div className="w-full max-w-4xl mx-auto text-center mt-8 md:mt-12 flex-1 flex flex-col items-center justify-center gap-2 md:gap-2.5">
+          {/* Typewriter hero + subtext — positioned in upper-middle safe area */}
+          <div className="w-full max-w-4xl mx-auto text-center mt-20 md:mt-28 lg:mt-32 flex flex-col items-center justify-center gap-3 md:gap-3.5 pb-8 md:pb-12">
             <TypewriterHero />
-            <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
-            <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
+            <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug px-2">{t.sub1}</p>
+            <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug px-2">{t.sub2}</p>
           </div>
 
           {/* Bottom: form card + privacy + features */}
