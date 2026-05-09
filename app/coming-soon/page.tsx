@@ -96,9 +96,9 @@ function TypewriterHero() {
   }, [currentLangIdx]);
 
   return (
-    <div className="flex items-center justify-center gap-1.5 md:gap-2">
+    <div className="flex items-center justify-center">
       <span
-        className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-block"
+        className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-flex items-center"
         style={{
           background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
           WebkitBackgroundClip: 'text',
@@ -114,8 +114,8 @@ function TypewriterHero() {
             verticalAlign: 'text-bottom',
           }}
         />
+        <span className="text-2xl md:text-3xl lg:text-4xl ml-0.5">{currentFlag}</span>
       </span>
-      <span className="text-2xl md:text-3xl lg:text-4xl">{currentFlag}</span>
     </div>
   );
 }
@@ -203,6 +203,37 @@ export default function ComingSoonPage() {
           }}
         />
 
+        {/* ── Language Bubbles (Left) ── */}
+        <div className="absolute left-4 md:left-6 lg:left-10 top-1/4 flex flex-col gap-3 md:gap-4 z-20 hidden md:flex">
+          {[
+            { flag: '🇺🇸', name: 'English' },
+            { flag: '🇪🇸', name: 'Spanish' },
+            { flag: '🇫🇷', name: 'French' },
+            { flag: '🇮🇹', name: 'Italian' },
+            { flag: '🇩🇪', name: 'German' },
+          ].map((lang, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5 backdrop-blur-md bg-white/40 rounded-full p-3 md:p-3.5 shadow-lg hover:bg-white/60 transition-all">
+              <span className="text-xl md:text-2xl">{lang.flag}</span>
+              <span className="text-[10px] md:text-xs font-medium text-slate-700 whitespace-nowrap">{lang.name}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Language Bubbles (Right) ── */}
+        <div className="absolute right-4 md:right-6 lg:right-10 top-1/4 flex flex-col gap-3 md:gap-4 z-20 hidden md:flex">
+          {[
+            { flag: '🇧🇷', name: 'Portuguese' },
+            { flag: '🇸🇦', name: 'Arabic' },
+            { flag: '🇯🇵', name: 'Japanese' },
+            { flag: '🇨🇳', name: 'Chinese' },
+          ].map((lang, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5 backdrop-blur-md bg-white/40 rounded-full p-3 md:p-3.5 shadow-lg hover:bg-white/60 transition-all">
+              <span className="text-xl md:text-2xl">{lang.flag}</span>
+              <span className="text-[10px] md:text-xs font-medium text-slate-700 whitespace-nowrap">{lang.name}</span>
+            </div>
+          ))}
+        </div>
+
         {/* ── Foreground content ── */}
         <div className="relative z-10 h-full w-full flex flex-col px-4">
 
@@ -244,16 +275,18 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          {/* Typewriter hero + subtext — positioned in upper-middle safe area */}
-          <div className="w-full max-w-4xl mx-auto text-center mt-20 md:mt-28 lg:mt-32 flex flex-col items-center justify-center gap-3 md:gap-3.5 pb-8 md:pb-12">
-            <TypewriterHero />
-            <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug px-2">{t.sub1}</p>
-            <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug px-2">{t.sub2}</p>
-          </div>
+          {/* Middle section: hero + form centered */}
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8">
+            {/* Hero content */}
+            <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-3 md:gap-3.5 px-2">
+              <TypewriterHero />
+              <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
+              <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
+            </div>
 
-          {/* Bottom: form card + privacy + features */}
-          <div className="w-full max-w-2xl mx-auto pb-4 md:pb-6 mt-4 md:mt-6">
-            <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
+            {/* Form card */}
+            <div className="w-full max-w-2xl">
+              <div className="bg-white/70 backdrop-blur-2xl border border-white/85 rounded-2xl shadow-2xl shadow-purple-300/30 px-4 md:px-5 py-3 md:py-4">
               {status === 'success' ? (
                 <div className="flex flex-col items-center gap-1.5 py-1">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -304,10 +337,13 @@ export default function ComingSoonPage() {
                 </>
               )}
             </div>
+          </div>
 
+          {/* Social proof + Features (below form, still centered) */}
+          <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-3">
             {/* Social proof */}
             {waitlistCount !== null && waitlistCount > 0 && (
-              <div className="flex items-center justify-center gap-1.5 mt-2.5 text-xs text-slate-600">
+              <div className="flex items-center justify-center gap-1.5 text-xs text-slate-600">
                 <div className="flex -space-x-1.5">
                   {['👩','👨','🧑'].map((emoji, i) => (
                     <div key={i} className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-[9px]">
@@ -321,7 +357,7 @@ export default function ComingSoonPage() {
             )}
 
             {/* Features */}
-            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-3 px-2">
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-2 px-2">
               {[
                 { icon: <Users className="w-3.5 h-3.5 text-indigo-500" />,       label: t.badge1 },
                 { icon: <Cpu className="w-3.5 h-3.5 text-indigo-500" />,         label: t.badge2 },
@@ -332,11 +368,15 @@ export default function ComingSoonPage() {
                 </div>
               ))}
             </div>
-
-            <p className="text-slate-500/80 text-[10px] text-center mt-2">{t.copyright}</p>
           </div>
         </div>
+
+        {/* Footer section (bottom) */}
+        <div className="relative z-10 pb-4 md:pb-6 px-4 text-center">
+          <p className="text-slate-500/80 text-[10px]">{t.copyright}</p>
+        </div>
       </div>
+    </div>
     </>
   );
 }
