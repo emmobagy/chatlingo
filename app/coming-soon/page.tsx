@@ -55,9 +55,8 @@ function TypewriterHero() {
   const [displayText, setDisplayText] = useState('');
   const [currentLangIdx, setCurrentLangIdx] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
-  const [currentFlag, setCurrentFlag] = useState(LANGUAGES[0].flag);
 
-  const fullText = T[LANGUAGES[currentLangIdx].code].typewriter;
+  const fullText = T[LANGUAGES[currentLangIdx].code].typewriter + ' ' + LANGUAGES[currentLangIdx].flag;
 
   useEffect(() => {
     const typingDelay = 50;
@@ -83,7 +82,6 @@ function TypewriterHero() {
         }, deletingDelay);
       } else {
         setCurrentLangIdx((prev) => (prev + 1) % LANGUAGES.length);
-        setCurrentFlag(LANGUAGES[(currentLangIdx + 1) % LANGUAGES.length].flag);
         setIsTyping(true);
       }
     }
@@ -91,17 +89,13 @@ function TypewriterHero() {
     return () => clearTimeout(timeout);
   }, [displayText, isTyping, fullText, currentLangIdx]);
 
-  useEffect(() => {
-    setCurrentFlag(LANGUAGES[currentLangIdx].flag);
-  }, [currentLangIdx]);
-
   return (
     <div className="flex items-center justify-center">
       <span
         className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-flex items-center gap-0.5"
         style={{ lineHeight: 1.2 }}
       >
-        {/* Gradient text only on displayText */}
+        {/* Gradient text with embedded flag */}
         <span
           style={{
             background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
@@ -120,8 +114,6 @@ function TypewriterHero() {
             verticalAlign: 'text-bottom',
           }}
         />
-        {/* Flag (visible, not affected by gradient) */}
-        <span className="text-2xl md:text-3xl lg:text-4xl">{currentFlag}</span>
       </span>
     </div>
   );
