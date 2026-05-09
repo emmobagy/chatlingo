@@ -56,7 +56,9 @@ function TypewriterHero() {
   const [currentLangIdx, setCurrentLangIdx] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
 
-  const fullText = T[LANGUAGES[currentLangIdx].code].typewriter + ' ' + LANGUAGES[currentLangIdx].flag;
+  const textOnly = T[LANGUAGES[currentLangIdx].code].typewriter;
+  const flag = LANGUAGES[currentLangIdx].flag;
+  const fullText = textOnly + ' ' + flag;
 
   useEffect(() => {
     const typingDelay = 50;
@@ -89,13 +91,16 @@ function TypewriterHero() {
     return () => clearTimeout(timeout);
   }, [displayText, isTyping, fullText, currentLangIdx]);
 
+  const textDisplayed = displayText.length <= textOnly.length ? displayText : textOnly;
+  const showFlag = displayText.length > textOnly.length;
+
   return (
     <div className="flex items-center justify-center">
       <span
         className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-flex items-center gap-0.5"
         style={{ lineHeight: 1.2 }}
       >
-        {/* Gradient text with embedded flag */}
+        {/* Gradient text only (no flag) */}
         <span
           style={{
             background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
@@ -104,13 +109,15 @@ function TypewriterHero() {
             filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
           }}
         >
-          {displayText}
+          {textDisplayed}
         </span>
+        {/* Flag (visible, colored) - appears after text is typed */}
+        {showFlag && <span className="text-2xl md:text-3xl lg:text-4xl">{flag}</span>}
         {/* Cursor (visible, not affected by gradient) */}
         <span
           className="inline-block w-0.5 h-[1em] bg-indigo-600 animate-pulse"
           style={{
-            animationDuration: '0.6s',
+            animationDuration: '1s',
             verticalAlign: 'text-bottom',
           }}
         />
