@@ -96,28 +96,26 @@ function TypewriterHero() {
   }, [currentLangIdx]);
 
   return (
-    <div className="flex flex-col items-center gap-3 md:gap-4">
-      <div className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none min-h-[3rem] md:min-h-[4rem] lg:min-h-[5rem] flex items-center justify-center">
+    <div className="flex items-center justify-center gap-1.5 md:gap-2">
+      <span
+        className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-block"
+        style={{
+          background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
+        }}
+      >
+        {displayText}
         <span
-          className="inline-block"
+          className="inline-block w-0.5 h-[1em] bg-indigo-600 ml-1 animate-pulse"
           style={{
-            background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 35%, #7c3aed 65%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 4px 20px rgba(124, 58, 237, 0.25))',
+            animationDuration: '0.6s',
+            verticalAlign: 'text-bottom',
           }}
-        >
-          {displayText}
-          <span
-            className="inline-block w-1 h-[1em] bg-indigo-600 ml-1 animate-pulse"
-            style={{
-              animationDuration: '0.6s',
-              verticalAlign: 'text-bottom',
-            }}
-          />
-        </span>
-      </div>
-      <div className="text-3xl md:text-4xl opacity-80">{currentFlag}</div>
+        />
+      </span>
+      <span className="text-2xl md:text-3xl lg:text-4xl">{currentFlag}</span>
     </div>
   );
 }
@@ -247,10 +245,10 @@ export default function ComingSoonPage() {
           </div>
 
           {/* Typewriter hero + subtext */}
-          <div className="w-full max-w-5xl mx-auto text-center mt-6 md:mt-10 flex-1 flex flex-col items-center justify-center gap-2 md:gap-3">
+          <div className="w-full max-w-4xl mx-auto text-center mt-8 md:mt-12 flex-1 flex flex-col items-center justify-center gap-2 md:gap-2.5">
             <TypewriterHero />
-            <p className="text-slate-800 font-bold text-sm md:text-base">{t.sub1}</p>
-            <p className="text-slate-500 text-xs md:text-sm">{t.sub2}</p>
+            <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
+            <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
           </div>
 
           {/* Bottom: form card + privacy + features */}
