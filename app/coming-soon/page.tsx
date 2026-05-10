@@ -270,99 +270,80 @@ export default function ComingSoonPage() {
           <div className="flex-1" />
         </div>
 
-        {/* Form card background - glassmorphism floating container */}
-        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/40 backdrop-blur-3xl border-t border-white/40">
-          <div className="w-full max-w-4xl mx-auto px-6 md:px-8 py-6 md:py-8">
-            <div className="bg-white/60 backdrop-blur-2xl border border-white/80 rounded-3xl shadow-2xl shadow-purple-400/20 px-8 md:px-10 py-6 md:py-8">
-              {status === 'success' ? (
-                <div className="flex flex-col items-center gap-1.5 py-1">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                  <p className="font-bold text-slate-800 text-sm">{t.success}</p>
-                  <p className="text-xs text-slate-500 text-center">{t.successSub}</p>
+        {/* Form card background - glassmorphism centered container */}
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-center px-4 pb-0">
+          <div className="w-full max-w-3xl bg-white/60 backdrop-blur-xl border border-white/80 rounded-t-[50px] shadow-2xl shadow-purple-400/20 px-12 py-8 md:px-14 md:py-10">
+            {/* Email form row */}
+            {status === 'success' ? (
+              <div className="flex flex-col items-center gap-3 py-2">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                 </div>
-              ) : status === 'duplicate' ? (
-                <div className="flex flex-col items-center gap-1.5 py-1">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                  <p className="font-bold text-slate-800 text-sm">{t.duplicate}</p>
-                  <p className="text-xs text-slate-500 text-center">{t.duplicateSub}</p>
+                <p className="font-bold text-slate-800 text-sm">{t.success}</p>
+                <p className="text-xs text-slate-500 text-center">{t.successSub}</p>
+              </div>
+            ) : status === 'duplicate' ? (
+              <div className="flex flex-col items-center gap-3 py-2">
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                 </div>
-              ) : (
-                <>
-                  <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <div className="flex-1 max-w-xs flex items-center gap-3 bg-white/70 border border-white/60 rounded-full px-5 md:px-6 py-3 md:py-3.5 backdrop-blur-sm shadow-inner shadow-black/5">
-                      <Mail className="w-5 h-5 text-slate-400 shrink-0" />
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder={t.placeholder}
-                        className="flex-1 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent min-w-0"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={status === 'loading'}
-                      className="w-full sm:w-auto text-white font-bold text-sm px-8 md:px-9 py-3 md:py-3.5 rounded-full transition-all disabled:opacity-60 whitespace-nowrap active:scale-95"
-                      style={{
-                        background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%)',
-                        boxShadow: '0 12px 32px rgba(147,51,234,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-                      }}
-                    >
-                      {status === 'loading' ? '...' : t.cta}
-                    </button>
-                  </form>
-                  {status === 'error' && <p className="text-red-500 text-xs text-center mt-3">{t.error}</p>}
-                  <div className="flex items-center justify-center gap-2 text-slate-500 text-xs mt-4">
-                    <ShieldCheck className="w-4 h-4 shrink-0 text-indigo-400" />
-                    <span>{t.privacy}</span>
+                <p className="font-bold text-slate-800 text-sm">{t.duplicate}</p>
+                <p className="text-xs text-slate-500 text-center">{t.duplicateSub}</p>
+              </div>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full mb-6">
+                  <div className="flex-1 flex items-center gap-3 bg-white/70 border border-white/60 rounded-[10px] px-6 py-3 backdrop-blur-sm">
+                    <Mail className="w-5 h-5 text-blue-400 shrink-0" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t.placeholder}
+                      className="flex-1 text-sm text-slate-700 placeholder-blue-300 outline-none bg-transparent"
+                    />
                   </div>
-                </>
-              )}
-            </div>
-          </div>
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="px-8 py-3 text-white font-bold text-sm rounded-[10px] transition-all disabled:opacity-60 whitespace-nowrap"
+                    style={{
+                      background: 'linear-gradient(140.46deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%)',
+                      boxShadow: '0 12px 16px rgba(147,51,234,0.4)',
+                    }}
+                  >
+                    {status === 'loading' ? '...' : t.cta}
+                  </button>
+                </form>
+                {status === 'error' && <p className="text-red-500 text-xs text-center mb-3">{t.error}</p>}
 
-          {/* Social proof + Features bar (below form) */}
-          <div className="w-full flex flex-col items-center gap-4 mt-2">
-            {/* Social proof */}
-            {waitlistCount !== null && waitlistCount > 0 && (
-              <div className="flex items-center justify-center gap-2 text-xs text-slate-600">
-                <div className="flex -space-x-2">
-                  {['👩','👨','🧑'].map((emoji, i) => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-[10px]">
-                      {emoji}
+                {/* Privacy text */}
+                <div className="flex items-center justify-center gap-2 text-slate-400 text-xs mb-4">
+                  <ShieldCheck className="w-4 h-4 shrink-0 text-indigo-400" />
+                  <span>{t.privacy}</span>
+                </div>
+
+                {/* Separator line */}
+                <div className="w-full h-px bg-white/40 mb-4" />
+
+                {/* Features bar */}
+                <div className="flex items-center justify-center gap-8">
+                  {[
+                    { icon: <Users className="w-4 h-4 text-slate-400" />, label: t.badge1 },
+                    { icon: <Cpu className="w-4 h-4 text-slate-400" />, label: t.badge2 },
+                    { icon: <ShieldCheck className="w-4 h-4 text-slate-400" />, label: t.badge3 },
+                  ].map((b, idx) => (
+                    <div key={b.label} className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-slate-500 text-xs md:text-sm font-medium">
+                        {b.icon}<span>{b.label}</span>
+                      </div>
+                      {idx < 2 && <div className="h-4 w-px bg-white/50" />}
                     </div>
                   ))}
                 </div>
-                <span className="font-semibold text-indigo-600">{waitlistCount.toLocaleString()}</span>
-                <span>{t.joined}</span>
-              </div>
+              </>
             )}
-
-            {/* Features capsule bar */}
-            <div className="bg-white/50 backdrop-blur-md border border-white/60 rounded-full px-6 md:px-8 py-3 flex items-center justify-center gap-6 md:gap-8">
-              {[
-                { icon: <Users className="w-4 h-4 text-slate-500" />,       label: t.badge1 },
-                { icon: <Cpu className="w-4 h-4 text-slate-500" />,         label: t.badge2 },
-                { icon: <ShieldCheck className="w-4 h-4 text-slate-500" />, label: t.badge3 },
-              ].map((b, idx) => (
-                <div key={b.label} className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 text-slate-600 text-xs md:text-sm font-medium">
-                    {b.icon}<span>{b.label}</span>
-                  </div>
-                  {idx < 2 && <div className="h-4 w-px bg-slate-300/40" />}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer section inside form background */}
-          <div className="w-full px-4 py-3 md:py-4 text-center border-t border-white/40">
-            <p className="text-slate-500/80 text-[10px]">{t.copyright}</p>
           </div>
         </div>
       </div>
