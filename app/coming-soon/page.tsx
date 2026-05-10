@@ -28,7 +28,6 @@ const T: Record<string, {
   ar: { typewriter: 'قريباً جداً', sub1: 'مستقبل التعلم هو التخصيص.', sub2: 'مدرسون بالذكاء الاصطناعي يفهمونك ويعلمونك ويرفعونك.', placeholder: 'أدخل بريدك الإلكتروني', cta: 'أخبرني', privacy: 'نحترم خصوصيتك. لا بريد مزعج أبداً.', badge1: 'تعلم شخصي', badge2: 'تقنية ذكاء اصطناعي تكيفية', badge3: 'موثوق وآمن', success: 'أنت في القائمة!', successSub: 'سنخبرك فور الافتتاح.', duplicate: 'مسجل بالفعل!', duplicateSub: 'هذا البريد موجود بالفعل في القائمة.', error: 'حدث خطأ ما. حاول مرة أخرى.', joined: 'شخصاً انضم بالفعل', copyright: '© 2026 ChatLingo. جميع الحقوق محفوظة.' },
   hi: { typewriter: 'जल्द आ रहा है', sub1: 'सीखने का भविष्य व्यक्तिगत है।', sub2: 'AI ट्यूटर जो आपको समझते, सिखाते और आगे बढ़ाते हैं।', placeholder: 'अपना ईमेल दर्ज करें', cta: 'सूचित करें', privacy: 'हम आपकी गोपनीयता का सम्मान करते हैं। कोई स्पैम नहीं।', badge1: 'व्यक्तिगत शिक्षा', badge2: 'अनुकूली AI तकनीक', badge3: 'विश्वसनीय और सुरक्षित', success: 'आप सूची में हैं!', successSub: 'खुलने पर हम आपको सूचित करेंगे।', duplicate: 'पहले से पंजीकृत!', duplicateSub: 'यह ईमेल पहले से सूची में है।', error: 'कुछ गलत हुआ। फिर कोशिश करें।', joined: 'लोग पहले से जुड़े हैं', copyright: '© 2026 ChatLingo. सर्वाधिकार सुरक्षित।' },
   tr: { typewriter: 'Yakında geliyor', sub1: 'Öğrenmenin geleceği kişiselleştirilmiş.', sub2: 'Seni anlayan, öğreten ve yükselten AI öğretmenler.', placeholder: 'E-posta adresinizi girin', cta: 'BİLDİR', privacy: 'Gizliliğinize saygı duyuyoruz. Spam yok.', badge1: 'Kişiselleştirilmiş Öğrenme', badge2: 'Uyarlanabilir AI Teknolojisi', badge3: 'Güvenilir ve Güvenli', success: 'Listedesin!', successSub: 'Açıldığımızda seni bilgilendireceğiz.', duplicate: 'Zaten kayıtlısın!', duplicateSub: 'Bu e-posta zaten listede.', error: 'Bir şeyler yanlış gitti. Tekrar dene.', joined: 'kişi zaten katıldı', copyright: '© 2026 ChatLingo. Tüm hakları saklıdır.' },
-  nl: { typewriter: 'Binnenkort beschikbaar', sub1: 'De toekomst van leren is gepersonaliseerd.', sub2: 'AI-tutors die jou begrijpen. Leren. Verheffen.', placeholder: 'Voer je e-mailadres in', cta: 'MELD MIJ AAN', privacy: 'We respecteren je privacy. Geen spam.', badge1: 'Gepersonaliseerd Leren', badge2: 'Adaptieve AI-technologie', badge3: 'Vertrouwd & Veilig', success: 'Je staat op de lijst!', successSub: 'We laten je weten zodra we openen.', duplicate: 'Al aangemeld!', duplicateSub: 'Dit e-mailadres staat al op de lijst.', error: 'Er ging iets mis. Probeer het opnieuw.', joined: 'mensen al aangemeld', copyright: '© 2026 ChatLingo. Alle rechten voorbehouden.' },
   pl: { typewriter: 'Już wkrótce', sub1: 'Przyszłość nauki jest spersonalizowana.', sub2: 'Tutorzy AI, którzy cię rozumieją. Uczą. Rozwijają.', placeholder: 'Wpisz swój adres email', cta: 'POWIADOM MNIE', privacy: 'Szanujemy Twoją prywatność. Żadnego spamu.', badge1: 'Spersonalizowana Nauka', badge2: 'Adaptacyjna Technologia AI', badge3: 'Zaufany i Bezpieczny', success: 'Jesteś na liście!', successSub: 'Powiadomimy cię, gdy się otworzymy.', duplicate: 'Już zapisany!', duplicateSub: 'Ten email jest już na liście.', error: 'Coś poszło nie tak. Spróbuj ponownie.', joined: 'osób już dołączyło', copyright: '© 2026 ChatLingo. Wszystkie prawa zastrzeżone.' },
 };
 
@@ -54,11 +53,8 @@ function TypewriterHero() {
     { flag: '🇸🇦', code: 'ar' },
     { flag: '🇮🇳', code: 'hi' },
     { flag: '🇹🇷', code: 'tr' },
-    { flag: '🇳🇱', code: 'nl' },
     { flag: '🇵🇱', code: 'pl' },
   ];
-
-  const LONG_TEXT_LANGS = ['nl'];
 
   const [displayText, setDisplayText] = useState('');
   const [currentLangIdx, setCurrentLangIdx] = useState(0);
@@ -66,10 +62,6 @@ function TypewriterHero() {
 
   const textOnly = T[LANGUAGES[currentLangIdx].code].typewriter;
   const flag = LANGUAGES[currentLangIdx].flag;
-  const isLongText = LONG_TEXT_LANGS.includes(LANGUAGES[currentLangIdx].code);
-  const heroSizeClass = isLongText
-    ? 'text-3xl md:text-4xl lg:text-5xl'
-    : 'text-5xl md:text-6xl lg:text-7xl';
   const fullText = textOnly + ' ' + flag;
 
   useEffect(() => {
@@ -111,7 +103,7 @@ function TypewriterHero() {
       <style>{blinkStyle}</style>
       <div className="flex items-center justify-center">
         <span
-          className={`${heroSizeClass} font-black tracking-tight inline-flex items-center gap-0.5`}
+          className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight inline-flex items-center gap-0.5"
           style={{ lineHeight: 1.2 }}
         >
           {/* Gradient text only (no flag) */}
@@ -126,7 +118,7 @@ function TypewriterHero() {
             {textDisplayed}
           </span>
           {/* Flag (visible, colored) - appears after text is typed */}
-          {showFlag && <span className={heroSizeClass}>{flag}</span>}
+          {showFlag && <span className="text-5xl md:text-6xl lg:text-7xl">{flag}</span>}
           {/* Cursor with true blink on/off */}
           <span
             className="inline-block w-0.5 h-[1em] bg-indigo-600"
