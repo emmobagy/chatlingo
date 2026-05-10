@@ -120,7 +120,7 @@ function TypewriterHero() {
             {textDisplayed}
           </span>
           {/* Flag (visible, colored) - appears after text is typed */}
-          {showFlag && <span className="text-2xl md:text-3xl lg:text-4xl">{flag}</span>}
+          {showFlag && <span className="text-5xl md:text-6xl lg:text-7xl">{flag}</span>}
           {/* Cursor with true blink on/off */}
           <span
             className="inline-block w-0.5 h-[1em] bg-indigo-600"
@@ -260,7 +260,7 @@ export default function ComingSoonPage() {
           </div>
 
           {/* Hero content - positioned at top */}
-          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-2 md:gap-3 px-2 pt-8 md:pt-12 pb-12 md:pb-16">
+          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-2 md:gap-3 px-2 pt-20 md:pt-32 pb-12 md:pb-16">
             <TypewriterHero />
             <p className="text-slate-800 font-semibold text-sm md:text-base lg:text-lg leading-snug">{t.sub1}</p>
             <p className="text-slate-500 text-xs md:text-sm lg:text-base leading-snug">{t.sub2}</p>
