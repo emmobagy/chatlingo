@@ -58,12 +58,18 @@ function TypewriterHero() {
     { flag: '🇵🇱', code: 'pl' },
   ];
 
+  const LONG_TEXT_LANGS = ['nl'];
+
   const [displayText, setDisplayText] = useState('');
   const [currentLangIdx, setCurrentLangIdx] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
 
   const textOnly = T[LANGUAGES[currentLangIdx].code].typewriter;
   const flag = LANGUAGES[currentLangIdx].flag;
+  const isLongText = LONG_TEXT_LANGS.includes(LANGUAGES[currentLangIdx].code);
+  const heroSizeClass = isLongText
+    ? 'text-4xl md:text-5xl lg:text-6xl'
+    : 'text-5xl md:text-6xl lg:text-7xl';
   const fullText = textOnly + ' ' + flag;
 
   useEffect(() => {
@@ -105,7 +111,7 @@ function TypewriterHero() {
       <style>{blinkStyle}</style>
       <div className="flex items-center justify-center">
         <span
-          className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight inline-flex items-center gap-0.5"
+          className={`${heroSizeClass} font-black tracking-tight inline-flex items-center gap-0.5`}
           style={{ lineHeight: 1.2 }}
         >
           {/* Gradient text only (no flag) */}
@@ -120,7 +126,7 @@ function TypewriterHero() {
             {textDisplayed}
           </span>
           {/* Flag (visible, colored) - appears after text is typed */}
-          {showFlag && <span className="text-5xl md:text-6xl lg:text-7xl">{flag}</span>}
+          {showFlag && <span className={heroSizeClass}>{flag}</span>}
           {/* Cursor with true blink on/off */}
           <span
             className="inline-block w-0.5 h-[1em] bg-indigo-600"
