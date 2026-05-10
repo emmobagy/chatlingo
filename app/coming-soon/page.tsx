@@ -68,7 +68,7 @@ function TypewriterHero() {
   const flag = LANGUAGES[currentLangIdx].flag;
   const isLongText = LONG_TEXT_LANGS.includes(LANGUAGES[currentLangIdx].code);
   const heroSizeClass = isLongText
-    ? 'text-4xl md:text-5xl lg:text-6xl'
+    ? 'text-3xl md:text-4xl lg:text-5xl'
     : 'text-5xl md:text-6xl lg:text-7xl';
   const fullText = textOnly + ' ' + flag;
 
