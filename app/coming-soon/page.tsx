@@ -105,7 +105,7 @@ function TypewriterHero() {
       <style>{blinkStyle}</style>
       <div className="flex items-center justify-center">
         <span
-          className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight inline-flex items-center gap-0.5"
+          className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight inline-flex items-center gap-0.5"
           style={{ lineHeight: 1.2 }}
         >
           {/* Gradient text only (no flag) */}
@@ -260,10 +260,10 @@ export default function ComingSoonPage() {
           </div>
 
           {/* Hero content - positioned at top */}
-          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-5 md:gap-6 px-2 pt-8 md:pt-12 pb-12 md:pb-16">
+          <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center justify-center gap-2 md:gap-3 px-2 pt-8 md:pt-12 pb-12 md:pb-16">
             <TypewriterHero />
-            <p className="text-slate-800 font-semibold text-xs md:text-sm lg:text-base leading-snug">{t.sub1}</p>
-            <p className="text-slate-500 text-[11px] md:text-xs lg:text-sm leading-snug">{t.sub2}</p>
+            <p className="text-slate-800 font-semibold text-sm md:text-base lg:text-lg leading-snug">{t.sub1}</p>
+            <p className="text-slate-500 text-xs md:text-sm lg:text-base leading-snug">{t.sub2}</p>
           </div>
 
           {/* Flexible spacer - takes remaining space */}
