@@ -270,7 +270,7 @@ export default function ComingSoonPage() {
 
         {/* Form card background - glassmorphism centered container */}
         <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-center px-4 pb-0">
-          <div className="w-full max-w-3xl bg-white/60 backdrop-blur-xl border border-white/80 rounded-t-[50px] shadow-2xl shadow-purple-400/20 px-12 py-8 md:px-14 md:py-10">
+          <div className="w-full max-w-2xl bg-white/60 backdrop-blur-xl border border-white/80 rounded-t-[50px] shadow-2xl shadow-purple-400/20 px-6 py-5 md:px-8 md:py-6">
             {/* Email form row */}
             {status === 'success' ? (
               <div className="flex flex-col items-center gap-3 py-2">
@@ -290,16 +290,16 @@ export default function ComingSoonPage() {
               </div>
             ) : (
               <>
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full mb-6">
-                  <div className="flex-1 flex items-center gap-3 bg-white/70 border border-white/60 rounded-[10px] px-6 py-3 backdrop-blur-sm">
-                    <Mail className="w-5 h-5 text-blue-400 shrink-0" />
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 w-full mb-4">
+                  <div className="flex-1 flex items-center gap-3 bg-white/70 border border-white/60 rounded-[10px] px-4 py-2.5 backdrop-blur-sm">
+                    <Mail className="w-5 h-5 text-indigo-600 shrink-0" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t.placeholder}
-                      className="flex-1 text-sm text-slate-700 placeholder-blue-300 outline-none bg-transparent"
+                      className="flex-1 text-sm text-slate-700 placeholder-indigo-400 outline-none bg-transparent"
                     />
                   </div>
                   <button
